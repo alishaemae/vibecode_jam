@@ -56,7 +56,7 @@ function App() {
             resetProfile();
             setAppState('onboarding');
           }}
-          className="fixed bottom-4 left-4 px-3 py-1 rounded text-xs bg-red-600/80 hover:bg-red-600 text-white font-semibold z-50 opacity-60 hover:opacity-100 transition-opacity"
+          className="fixed bottom-4 left-4 px-4 py-2 rounded-lg text-sm bg-red-600/80 hover:bg-red-600 text-white font-semibold z-50 opacity-60 hover:opacity-100 transition-opacity"
           title="Reset profile (Ctrl+Shift+R)"
         >
           🔄 Reset
@@ -93,16 +93,16 @@ function App() {
           </div>
 
           {/* Status bar */}
-          <div className="glass-dark border-t border-[#334155]/30 px-4 py-3 text-sm text-[#94A3B8]">
+          <div className="glass-dark border-t border-[#334155]/30 px-5 py-4 text-base text-[#94A3B8]">
             <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-[#10B981] glow-success' : 'bg-[#EF4444]'}`}></span>
+              <div className="flex items-center gap-3">
+                <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-[#10B981] glow-success' : 'bg-[#EF4444]'}`}></span>
                 <span>{isConnected ? 'Connected to AI' : 'Disconnected'}</span>
               </div>
-              <div className="space-x-3">
+              <div className="space-x-4">
                 <button
                   onClick={() => setAppState('report')}
-                  className="px-4 py-2 rounded-lg glass-light hover:bg-[#475569]/50 transition-all hover:glow-primary text-[#E2E8F0]"
+                  className="px-5 py-2.5 rounded-xl glass-light hover:bg-[#475569]/50 transition-all hover:glow-primary text-[#E2E8F0] font-medium"
                 >
                   View Report
                 </button>

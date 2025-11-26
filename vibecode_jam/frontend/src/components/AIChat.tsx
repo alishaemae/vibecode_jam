@@ -46,12 +46,12 @@ export function AIChat() {
       className="h-full glass rounded-xl overflow-hidden flex flex-col"
     >
       {/* Header */}
-      <div className="glass-dark border-b border-[#334155]/30 p-5">
-        <div className="flex items-center gap-3 mb-1">
-          <div className="text-2xl">🤖</div>
+      <div className="glass-dark border-b border-[#334155]/30 p-6">
+        <div className="flex items-center gap-4 mb-1">
+          <div className="text-3xl">🤖</div>
           <div>
-            <h3 className="text-lg font-bold text-[#E2E8F0]">AI Interviewer</h3>
-            <p className="text-xs text-[#64748B] font-medium uppercase tracking-wider">Real-time feedback</p>
+            <h3 className="text-xl font-semibold text-[#E2E8F0]">AI Interviewer</h3>
+            <p className="text-sm text-[#64748B] font-medium uppercase tracking-wider">Real-time feedback</p>
           </div>
         </div>
         <div className="mt-2 flex items-center gap-2">
@@ -71,8 +71,8 @@ export function AIChat() {
             >
               <div className="text-center text-[#64748B]">
                 <div className="text-4xl mb-3">👋</div>
-                <p className="text-base font-semibold mb-2 text-[#94A3B8]">Welcome to the Interview!</p>
-                <p className="text-xs text-[#64748B] max-w-[200px]">Start coding and I'll provide real-time guidance and feedback...</p>
+                <p className="text-lg font-semibold mb-2 text-[#94A3B8]">Welcome to the Interview!</p>
+                <p className="text-sm text-[#64748B] max-w-[220px]">Start coding and I'll provide real-time guidance and feedback...</p>
               </div>
             </motion.div>
           ) : (
@@ -91,7 +91,7 @@ export function AIChat() {
                       : 'glass-light text-[#E2E8F0] rounded-bl-none shadow-md'
                   }`}
                 >
-                  <p className="text-sm break-words leading-relaxed">{msg.content}</p>
+                  <p className="text-base break-words leading-relaxed">{msg.content}</p>
                   <p className={`text-xs opacity-60 mt-2 font-light ${msg.role === 'user' ? 'text-white/70' : 'text-[#94A3B8]'}`}>
                     {new Date(msg.timestamp).toLocaleTimeString([], {
                       hour: '2-digit',
@@ -146,7 +146,7 @@ export function AIChat() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask anything..."
-              className="w-full px-5 py-3 bg-transparent text-[#E2E8F0] placeholder-[#64748B] focus:outline-none text-sm font-medium"
+              className="w-full px-5 py-4 bg-transparent text-[#E2E8F0] placeholder-[#64748B] focus:outline-none text-base font-medium"
             />
           </div>
           <motion.button

@@ -29,7 +29,7 @@ export function ProgressIndicator({
                 stiffness: 300,
                 damping: 30,
               }}
-              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm mb-2 transition-all ${
+              className={`w-12 h-12 rounded-full flex items-center justify-center font-semibold text-base mb-2 transition-all ${
                 index <= currentStep
                   ? 'bg-gradient-to-br from-cyan-500 to-purple-500 text-white shadow-lg shadow-cyan-500/50'
                   : 'bg-[rgba(71,85,105,0.3)] text-[#94A3B8] border border-[#475569]/50'
@@ -57,7 +57,7 @@ export function ProgressIndicator({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className={`text-xs text-center whitespace-nowrap px-2 ${
+              className={`text-sm text-center whitespace-nowrap px-2 ${
                 index <= currentStep ? 'text-[#E2E8F0] font-semibold' : 'text-[#94A3B8]'
               }`}
             >
@@ -89,7 +89,7 @@ export function ProgressIndicator({
       </div>
 
       {/* Animated progress line at bottom */}
-      <div className="h-1 bg-[rgba(71,85,105,0.2)] rounded-full overflow-hidden">
+      <div className="h-2 bg-[rgba(71,85,105,0.2)] rounded-full overflow-hidden">
         <motion.div
           className="h-full bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"
           initial={{ width: '0%' }}
@@ -104,7 +104,7 @@ export function ProgressIndicator({
 
       {/* Step counter */}
       <motion.div
-        className="text-center mt-4 text-[#64748B] text-sm"
+        className="text-center mt-4 text-[#64748B] text-base"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}

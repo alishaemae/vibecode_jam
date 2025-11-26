@@ -91,10 +91,10 @@ export function Step3ProfileLinks() {
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
-        <h2 className="text-4xl font-bold text-[#E2E8F0] mb-3 flex items-center justify-center gap-3">
-          <span className="text-5xl">🔗</span> Ваши профили
+        <h2 className="text-3xl font-semibold text-[#E2E8F0] mb-4 flex items-center justify-center gap-4">
+          <span className="text-4xl">🔗</span> Ваши профили
         </h2>
-        <p className="text-[#94A3B8] text-base">Добавьте ссылки на ваши профили (опционально)</p>
+        <p className="text-[#94A3B8] text-lg">Добавьте ссылки на ваши профили (опционально)</p>
       </motion.div>
 
       {/* Links Grid */}
@@ -108,13 +108,13 @@ export function Step3ProfileLinks() {
             className="group"
           >
             {/* Card container */}
-            <div className={`p-6 rounded-xl border-2 transition-all ${
+            <div className={`p-7 rounded-xl border-2 transition-all ${
               errors[link.name as keyof FormErrors]
                 ? 'bg-[rgba(239,68,68,0.05)] border-red-500/30'
                 : 'bg-[rgba(51,65,85,0.2)] border-[#475569]/50 group-hover:border-cyan-500/30 group-hover:bg-[rgba(51,65,85,0.3)]'
             }`}>
               {/* Label with icon */}
-              <label className="block text-base font-semibold text-[#E2E8F0] mb-2 flex items-center gap-3">
+              <label className="block text-lg font-semibold text-[#E2E8F0] mb-2 flex items-center gap-3">
                 <span className="text-2xl">{link.icon}</span>
                 {link.label}
                 {link.name === 'portfolioUrl' && (
@@ -123,7 +123,7 @@ export function Step3ProfileLinks() {
               </label>
 
               {/* Description */}
-              <p className="text-sm text-[#94A3B8] mb-4 font-light">{link.description}</p>
+              <p className="text-base text-[#94A3B8] mb-4 font-light">{link.description}</p>
 
               {/* Input */}
               <div className="relative">
@@ -218,10 +218,10 @@ export function Step3ProfileLinks() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.7 }}
-        className="p-4 rounded-lg bg-[rgba(168,85,247,0.05)] border border-purple-500/20"
+        className="p-5 rounded-lg bg-[rgba(168,85,247,0.05)] border border-purple-500/20"
       >
-        <p className="text-xs text-[#94A3B8] font-semibold mb-2">📌 Pro Tips</p>
-        <ul className="text-xs text-[#94A3B8] space-y-1">
+        <p className="text-sm text-[#94A3B8] font-semibold mb-2">📌 Pro Tips</p>
+        <ul className="text-sm text-[#94A3B8] space-y-1">
           <li>• Your GitHub profile helps us understand your coding style</li>
           <li>• Keep your LinkedIn profile up-to-date</li>
           <li>• Portfolio is optional but recommended</li>

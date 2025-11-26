@@ -44,15 +44,15 @@ function MetricCard({ title, value, unit, color, icon }: MetricCardProps) {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ translateY: -4 }}
-      className={`glass-light rounded-xl p-5 transition-all cursor-default group ${glowMap[color]}`}
+      className={`glass-light rounded-xl p-6 transition-all cursor-default group ${glowMap[color]}`}
     >
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#64748B] group-hover:text-[#94A3B8] transition-colors">{title}</p>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm font-semibold uppercase tracking-wide text-[#64748B] group-hover:text-[#94A3B8] transition-colors">{title}</p>
         <span className={`text-3xl transform group-hover:scale-110 transition-transform duration-200`}>{icon}</span>
       </div>
-      <p className={`text-3xl font-bold ${colorMap[color]}`}>
+      <p className={`text-4xl font-semibold ${colorMap[color]}`}>
         {typeof value === 'number' ? displayValue : value}
-        {unit && <span className="text-xs ml-2 font-medium text-[#94A3B8]">{unit}</span>}
+        {unit && <span className="text-sm ml-2 font-medium text-[#94A3B8]">{unit}</span>}
       </p>
     </motion.div>
   );
@@ -83,16 +83,16 @@ export function MetricsDashboard() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="glass rounded-xl p-6"
+      className="glass rounded-xl p-7"
     >
       <div className="flex justify-between items-start mb-8">
         <div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-[#E2E8F0] to-[#94A3B8] bg-clip-text text-transparent mb-2">
+          <h2 className="text-2xl font-semibold bg-gradient-to-r from-[#E2E8F0] to-[#94A3B8] bg-clip-text text-transparent mb-3">
             Interview Progress
           </h2>
-          <div className="flex items-center gap-2">
-            <p className="text-[#94A3B8]">Level:</p>
-            <span className="px-3 py-1 rounded-full glass-light text-[#2E75B6] font-semibold text-sm">
+          <div className="flex items-center gap-3">
+            <p className="text-[#94A3B8] text-base">Level:</p>
+            <span className="px-4 py-1.5 rounded-full glass-light text-[#2E75B6] font-semibold text-base">
               {level?.toUpperCase()} 🎯
             </span>
           </div>
@@ -108,12 +108,12 @@ export function MetricsDashboard() {
 
       {/* Progress Bar */}
       <div className="mb-8">
-        <div className="flex justify-between items-center mb-3">
-          <p className="text-sm font-semibold text-[#94A3B8] uppercase tracking-wide">Overall Progress</p>
+        <div className="flex justify-between items-center mb-4">
+          <p className="text-base font-semibold text-[#94A3B8] uppercase tracking-wide">Overall Progress</p>
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className={`text-sm font-bold ${
+            className={`text-base font-bold ${
               scoreColor === 'success'
                 ? 'text-[#10B981]'
                 : scoreColor === 'warning'
@@ -124,7 +124,7 @@ export function MetricsDashboard() {
             {score}%
           </motion.p>
         </div>
-        <div className="w-full bg-[#334155]/30 rounded-full h-2 overflow-hidden backdrop-blur-sm">
+        <div className="w-full bg-[#334155]/30 rounded-full h-3 overflow-hidden backdrop-blur-sm">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${score}%` }}
@@ -141,7 +141,7 @@ export function MetricsDashboard() {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard
           title="Tasks"
           value={`${metrics?.tasksCompleted || 0}/${metrics?.totalTasks || 3}`}

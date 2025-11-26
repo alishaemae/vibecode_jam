@@ -1,8 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
 * {
   box-sizing: border-box;
@@ -130,4 +129,126 @@ html, body, #root {
 
 .glow-pulse {
   animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Component classes - plain CSS for Tailwind v4 compatibility */
+.btn {
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1.0625rem;
+  line-height: 1.625rem;
+  transition: all 0.2s ease;
+}
+
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(46, 117, 182, 0.5);
+}
+
+.btn-primary {
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1.0625rem;
+  line-height: 1.625rem;
+  transition: all 0.2s ease;
+  color: white;
+  background: linear-gradient(135deg, #2E75B6 0%, #8B5CF6 100%);
+}
+
+.btn-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(46, 117, 182, 0.5);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+}
+
+.btn-secondary {
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1.0625rem;
+  line-height: 1.625rem;
+  transition: all 0.2s ease;
+  color: #e2e8f0;
+  background: rgba(51, 65, 85, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.btn-secondary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(46, 117, 182, 0.5);
+}
+
+.btn-secondary:hover {
+  background: rgba(71, 85, 105, 0.5);
+}
+
+.btn-lg {
+  padding: 1rem 1.5rem;
+  font-size: 1.1875rem;
+  line-height: 1.75rem;
+  border-radius: 1rem;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem;
+  line-height: 1.375rem;
+  border-radius: 0.5rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 1.0625rem;
+  line-height: 1.625rem;
+  font-weight: 500;
+  background: rgba(51, 65, 85, 0.3);
+  border: 2px solid rgba(71, 85, 105, 0.5);
+  color: #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.input-field::placeholder {
+  color: #64748b;
+}
+
+.input-field:focus {
+  border-color: #2E75B6;
+  box-shadow: 0 0 0 2px rgba(46, 117, 182, 0.2);
+  outline: none;
+}
+
+.card {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.card-header {
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+  padding: 1.25rem;
+}
+
+.label {
+  display: block;
+  font-size: 1.0625rem;
+  line-height: 1.625rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin-bottom: 0.5rem;
 }

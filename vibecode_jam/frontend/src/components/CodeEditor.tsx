@@ -55,20 +55,20 @@ export function CodeEditor({ onRunTests, onSubmit }: CodeEditorProps) {
       className="h-full glass rounded-2xl overflow-hidden flex flex-col"
     >
       {/* Header */}
-      <div className="glass-dark border-b border-[#334155]/30 p-5 flex justify-between items-center">
+      <div className="glass-dark border-b border-[#334155]/30 p-6 flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-bold text-[#E2E8F0] flex items-center gap-2">
-            <span className="text-xl">💻</span> Code Editor
+          <h3 className="text-xl font-semibold text-[#E2E8F0] flex items-center gap-3">
+            <span className="text-2xl">💻</span> Code Editor
           </h3>
           {currentTask && (
-            <p className="text-xs text-[#94A3B8] mt-2 font-light">{currentTask.title}</p>
+            <p className="text-sm text-[#94A3B8] mt-2 font-light">{currentTask.title}</p>
           )}
         </div>
         <div className="glass-light rounded-xl overflow-hidden">
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="px-4 py-2 bg-transparent text-[#E2E8F0] text-sm focus:outline-none font-semibold cursor-pointer appearance-none"
+            className="px-5 py-3 bg-transparent text-[#E2E8F0] text-base focus:outline-none font-semibold cursor-pointer appearance-none"
           >
             <option value="python">Python</option>
             <option value="javascript">JavaScript</option>
@@ -104,15 +104,15 @@ export function CodeEditor({ onRunTests, onSubmit }: CodeEditorProps) {
       </div>
 
       {/* Footer with Buttons */}
-      <div className="glass-dark border-t border-[#334155]/30 p-4 flex gap-3 justify-end">
+      <div className="glass-dark border-t border-[#334155]/30 p-5 flex gap-4 justify-end">
         <motion.button
-          whileHover={{ scale: 1.08 }}
+          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleRunTests}
           disabled={isRunning}
-          className="px-5 py-2 rounded-lg glass-light text-[#E2E8F0] font-semibold hover:bg-[#475569]/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-6 py-3 rounded-xl glass-light text-[#E2E8F0] font-semibold hover:bg-[#475569]/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 text-base"
         >
-          <span className="text-base">⚙️</span>
+          <span className="text-lg">⚙️</span>
           {isRunning ? (
             <motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity }}>
               Running...
@@ -122,12 +122,12 @@ export function CodeEditor({ onRunTests, onSubmit }: CodeEditorProps) {
           )}
         </motion.button>
         <motion.button
-          whileHover={{ scale: 1.08, boxShadow: '0 0 30px rgba(139, 92, 246, 0.4)' }}
+          whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(139, 92, 246, 0.4)' }}
           whileTap={{ scale: 0.95 }}
           onClick={handleSubmit}
-          className="px-5 py-2 rounded-lg bg-gradient-to-r from-[#2E75B6] to-[#8B5CF6] text-white font-semibold hover:shadow-lg transition-all flex items-center gap-2"
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#2E75B6] to-[#8B5CF6] text-white font-semibold hover:shadow-lg transition-all flex items-center gap-2 text-base"
         >
-          <span className="text-base">✅</span>
+          <span className="text-lg">✅</span>
           Submit Solution
         </motion.button>
       </div>

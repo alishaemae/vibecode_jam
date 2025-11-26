@@ -67,10 +67,10 @@ export function FinalReport({ onRetry }: FinalReportProps) {
           >
             🎉
           </motion.div>
-          <h1 className="text-6xl font-bold bg-gradient-to-r from-[#10B981] via-[#2E75B6] to-[#8B5CF6] bg-clip-text text-transparent mb-4">
+          <h1 className="text-5xl font-semibold bg-gradient-to-r from-[#10B981] via-[#2E75B6] to-[#8B5CF6] bg-clip-text text-transparent mb-4">
             Interview Complete!
           </h1>
-          <p className="text-[#94A3B8] text-lg font-light">Here's your detailed performance report</p>
+          <p className="text-[#94A3B8] text-xl font-light">Here's your detailed performance report</p>
         </motion.div>
 
         {/* Overall Score */}
@@ -116,18 +116,18 @@ export function FinalReport({ onRetry }: FinalReportProps) {
                     transition={{ duration: 2, ease: 'easeOut' }}
                   />
                 </svg>
-                <div className={`text-6xl font-bold ${scoreColor} drop-shadow-lg`}>{score}%</div>
+                <div className={`text-5xl font-semibold ${scoreColor} drop-shadow-lg`}>{score}%</div>
               </div>
             </motion.div>
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className={`text-3xl font-bold ${scoreColor} mb-2`}
+              className={`text-2xl font-semibold ${scoreColor} mb-2`}
             >
               {score >= 80 ? '🏆 Excellent!' : score >= 50 ? '👍 Good!' : '💪 Keep Practicing!'}
             </motion.p>
-            <p className="text-[#94A3B8] text-sm">
+            <p className="text-[#94A3B8] text-base">
               {score >= 80 ? 'Outstanding performance! You\'re ready for the next level.' : score >= 50 ? 'Great effort! Focus on the areas marked below to improve further.' : 'Great start! Review the feedback and keep practicing to improve your score.'}
             </p>
           </div>
@@ -141,11 +141,11 @@ export function FinalReport({ onRetry }: FinalReportProps) {
             className="glass-light rounded-2xl p-8 text-center shadow-lg shadow-[#2E75B6]/20 hover:shadow-[#2E75B6]/40 transition-all"
           >
             <div className="text-3xl mb-4">📋</div>
-            <p className="text-[#94A3B8] mb-3 text-sm font-semibold uppercase tracking-wide">Tasks Completed</p>
-            <p className="text-5xl font-bold text-[#2E75B6]">
+            <p className="text-[#94A3B8] mb-3 text-base font-semibold uppercase tracking-wide">Tasks Completed</p>
+            <p className="text-4xl font-semibold text-[#2E75B6]">
               {metrics?.tasksCompleted || 3}
             </p>
-            <p className="text-xs text-[#64748B] mt-3 font-medium">
+            <p className="text-sm text-[#64748B] mt-3 font-medium">
               out of {metrics?.totalTasks || 3} tasks
             </p>
           </motion.div>
@@ -156,11 +156,11 @@ export function FinalReport({ onRetry }: FinalReportProps) {
             className="glass-light rounded-2xl p-8 text-center shadow-lg shadow-[#10B981]/20 hover:shadow-[#10B981]/40 transition-all"
           >
             <div className="text-3xl mb-4">✅</div>
-            <p className="text-[#94A3B8] mb-3 text-sm font-semibold uppercase tracking-wide">Tests Passed</p>
-            <p className="text-5xl font-bold text-[#10B981]">
+            <p className="text-[#94A3B8] mb-3 text-base font-semibold uppercase tracking-wide">Tests Passed</p>
+            <p className="text-4xl font-semibold text-[#10B981]">
               {metrics?.testsPassed || 15}
             </p>
-            <p className="text-xs text-[#64748B] mt-3 font-medium">
+            <p className="text-sm text-[#64748B] mt-3 font-medium">
               out of {metrics?.totalTests || 20} tests
             </p>
           </motion.div>
@@ -171,9 +171,9 @@ export function FinalReport({ onRetry }: FinalReportProps) {
             className="glass-light rounded-2xl p-8 text-center shadow-lg shadow-[#8B5CF6]/20 hover:shadow-[#8B5CF6]/40 transition-all"
           >
             <div className="text-3xl mb-4">⏱️</div>
-            <p className="text-[#94A3B8] mb-3 text-sm font-semibold uppercase tracking-wide">Time Spent</p>
-            <p className="text-5xl font-bold text-[#8B5CF6]">45:32</p>
-            <p className="text-xs text-[#64748B] mt-3 font-medium">minutes</p>
+            <p className="text-[#94A3B8] mb-3 text-base font-semibold uppercase tracking-wide">Time Spent</p>
+            <p className="text-4xl font-semibold text-[#8B5CF6]">45:32</p>
+            <p className="text-sm text-[#64748B] mt-3 font-medium">minutes</p>
           </motion.div>
         </div>
 

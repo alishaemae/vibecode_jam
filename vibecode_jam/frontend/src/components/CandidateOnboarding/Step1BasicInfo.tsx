@@ -86,10 +86,10 @@ export function Step1BasicInfo() {
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
-        <h2 className="text-4xl font-bold text-[#E2E8F0] mb-3 flex items-center justify-center gap-3">
-          <span className="text-5xl">👋</span> Добро пожаловать в VibeCode
+        <h2 className="text-3xl font-semibold text-[#E2E8F0] mb-4 flex items-center justify-center gap-4">
+          <span className="text-4xl">👋</span> Добро пожаловать в VibeCode
         </h2>
-        <p className="text-[#94A3B8] text-base">Расскажите нам о себе</p>
+        <p className="text-[#94A3B8] text-lg">Расскажите нам о себе</p>
       </motion.div>
 
       {/* Avatar Upload Section */}
@@ -150,7 +150,7 @@ export function Step1BasicInfo() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 + index * 0.1, duration: 0.5 }}
           >
-            <label className="block text-base font-semibold text-[#E2E8F0] mb-3 flex items-center gap-3">
+            <label className="block text-lg font-semibold text-[#E2E8F0] mb-3 flex items-center gap-3">
               <span className="text-2xl">{field.icon}</span>
               {field.label}
             </label>
@@ -205,10 +205,10 @@ export function Step1BasicInfo() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
-        className="mt-8 p-6 rounded-xl bg-[rgba(6,182,212,0.05)] border-2 border-cyan-500/20 flex gap-4"
+        className="mt-10 p-6 rounded-xl bg-[rgba(6,182,212,0.05)] border-2 border-cyan-500/20 flex gap-4"
       >
         <span className="text-2xl flex-shrink-0">ℹ️</span>
-        <p className="text-sm text-[#94A3B8] leading-relaxed">
+        <p className="text-base text-[#94A3B8] leading-relaxed">
           Мы используем эту информацию для персонализации вашего интервью и отправки уведомлений о вашем прогрессе.
         </p>
       </motion.div>

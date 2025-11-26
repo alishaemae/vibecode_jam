@@ -80,10 +80,10 @@ export function Step2ProfessionalInfo() {
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
-        <h2 className="text-4xl font-bold text-[#E2E8F0] mb-3 flex items-center justify-center gap-3">
-          <span className="text-5xl">💼</span> Профессиональный опыт
+        <h2 className="text-3xl font-semibold text-[#E2E8F0] mb-4 flex items-center justify-center gap-4">
+          <span className="text-4xl">💼</span> Профессиональный опыт
         </h2>
-        <p className="text-[#94A3B8] text-base">Расскажите о вашем опыте работы</p>
+        <p className="text-[#94A3B8] text-lg">Расскажите о вашем опыте работы</p>
       </motion.div>
 
       {/* Experience Level Card */}
@@ -93,7 +93,7 @@ export function Step2ProfessionalInfo() {
         transition={{ delay: 0.1 }}
         className="p-7 rounded-xl bg-gradient-to-br from-[rgba(6,182,212,0.1)] to-[rgba(168,85,247,0.05)] border-2 border-cyan-500/20"
       >
-        <label className="block text-base font-semibold text-[#E2E8F0] mb-6 flex items-center gap-3">
+        <label className="block text-lg font-semibold text-[#E2E8F0] mb-6 flex items-center gap-3">
           <span className="text-2xl">📊</span> Опыт работы (лет)
         </label>
 
@@ -107,7 +107,7 @@ export function Step2ProfessionalInfo() {
             value={profile.yearsOfExperience || 0}
             onChange={handleChange}
             onBlur={handleBlur}
-            className="w-full h-2 bg-[rgba(71,85,105,0.3)] rounded-lg appearance-none cursor-pointer accent-cyan-500"
+            className="w-full h-3 bg-[rgba(71,85,105,0.3)] rounded-lg appearance-none cursor-pointer accent-cyan-500"
           />
 
           {/* Value display with gradient badges */}
@@ -129,7 +129,7 @@ export function Step2ProfessionalInfo() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="px-3 py-1 rounded-full text-xs font-semibold text-white"
+              className="px-4 py-1.5 rounded-full text-sm font-semibold text-white"
               style={{
                 background: `linear-gradient(135deg, ${
                   (profile.yearsOfExperience || 0) < 2
@@ -160,7 +160,7 @@ export function Step2ProfessionalInfo() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <label className="block text-base font-semibold text-[#E2E8F0] mb-3 flex items-center gap-3">
+          <label className="block text-lg font-semibold text-[#E2E8F0] mb-3 flex items-center gap-3">
             <span className="text-2xl">👨‍💼</span> Текущая должность
           </label>
 
@@ -200,7 +200,7 @@ export function Step2ProfessionalInfo() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          <label className="block text-base font-semibold text-[#E2E8F0] mb-3 flex items-center gap-3">
+          <label className="block text-lg font-semibold text-[#E2E8F0] mb-3 flex items-center gap-3">
             <span className="text-2xl">🏢</span> Текущая компания
           </label>
 

@@ -55,7 +55,7 @@ export function CompletionScreen({ onContinue }: CompletionScreenProps) {
       >
         <motion.h2
           variants={itemVariants}
-          className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-3"
+          className="text-3xl font-semibold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4"
         >
           Добро пожаловать! 🚀
         </motion.h2>
@@ -107,28 +107,28 @@ export function CompletionScreen({ onContinue }: CompletionScreenProps) {
               variants={itemVariants}
               className="text-center p-3 rounded-lg bg-[rgba(51,65,85,0.2)] border border-[#475569]/30"
             >
-              <div className="text-2xl font-bold text-cyan-400">{profile.yearsOfExperience}</div>
-              <div className="text-xs text-[#94A3B8] mt-1">Лет опыта</div>
+              <div className="text-3xl font-semibold text-cyan-400">{profile.yearsOfExperience}</div>
+              <div className="text-sm text-[#94A3B8] mt-1">Лет опыта</div>
             </motion.div>
 
             <motion.div
               variants={itemVariants}
               className="text-center p-3 rounded-lg bg-[rgba(51,65,85,0.2)] border border-[#475569]/30"
             >
-              <div className="text-2xl font-bold text-purple-400">
+              <div className="text-3xl font-semibold text-purple-400">
                 {(profile.technologyPreferences || []).length}
               </div>
-              <div className="text-xs text-[#94A3B8] mt-1">Технологии</div>
+              <div className="text-sm text-[#94A3B8] mt-1">Технологии</div>
             </motion.div>
 
             <motion.div
               variants={itemVariants}
               className="text-center p-3 rounded-lg bg-[rgba(51,65,85,0.2)] border border-[#475569]/30"
             >
-              <div className="text-2xl font-bold text-pink-400">
+              <div className="text-3xl font-semibold text-pink-400">
                 {profile.linkedinProfile ? '✓' : '○'}
               </div>
-              <div className="text-xs text-[#94A3B8] mt-1">Профили</div>
+              <div className="text-sm text-[#94A3B8] mt-1">Профили</div>
             </motion.div>
           </div>
 
@@ -229,7 +229,7 @@ export function CompletionScreen({ onContinue }: CompletionScreenProps) {
         onClick={onContinue}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="relative w-full py-4 px-6 rounded-xl overflow-hidden group font-bold text-lg disabled:opacity-50 transition-all"
+        className="relative w-full py-5 px-8 rounded-2xl overflow-hidden group font-bold text-xl disabled:opacity-50 transition-all"
       >
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 opacity-100 group-hover:opacity-90 transition-opacity" />
@@ -262,7 +262,7 @@ export function CompletionScreen({ onContinue }: CompletionScreenProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        className="text-center text-[#64748B] text-xs"
+        className="text-center text-[#64748B] text-sm"
       >
         ✨ AI-powered interviews • 🧪 Real-time feedback • 📊 Detailed analytics
       </motion.p>

@@ -3,13 +3,13 @@ import { motion } from 'framer-motion';
 export function VibeLogo() {
   return (
     <motion.div
-      className="flex items-center justify-center gap-4 mb-10"
+      className="flex items-center justify-center gap-5 mb-12"
       initial={{ opacity: 0, y: -30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: 'easeOut' }}
     >
       {/* Animated geometric logo */}
-      <div className="relative w-20 h-20">
+      <div className="relative w-24 h-24">
         {/* Outer hexagon border */}
         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 80 80">
           <defs>
@@ -89,7 +89,7 @@ export function VibeLogo() {
         transition={{ duration: 0.6, delay: 0.3 }}
         className="flex flex-col gap-0"
       >
-        <h1 className="text-4xl font-black tracking-tighter leading-none">
+        <h1 className="text-5xl font-black tracking-tighter leading-none">
           <span className="bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
             Vibe
           </span>
@@ -99,7 +99,7 @@ export function VibeLogo() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.5 }}
-          className="text-xs font-black text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text tracking-[0.15em] mt-0.5"
+          className="text-sm font-black text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 bg-clip-text tracking-[0.2em] mt-1"
         >
           JAM
         </motion.div>

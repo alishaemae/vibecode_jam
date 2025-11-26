@@ -89,7 +89,7 @@ export function InterviewSelector({ onStart }: InterviewSelectorProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.5 }}
-              className="text-center text-[#94A3B8] text-sm font-light tracking-wide mb-10"
+              className="text-center text-[#94A3B8] text-base font-light tracking-wide mb-10"
             >
               Master coding interviews with AI guidance
             </motion.p>
@@ -100,11 +100,11 @@ export function InterviewSelector({ onStart }: InterviewSelectorProps) {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.6, duration: 0.5 }}
-                className="text-lg font-bold mb-5 text-[#E2E8F0] flex items-center gap-2"
+                className="text-xl font-semibold mb-6 text-[#E2E8F0] flex items-center gap-3"
               >
-                <span className="text-xl">🎯</span> Select Your Level
+                <span className="text-2xl">🎯</span> Select Your Level
               </motion.h2>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-4">
                 {LEVELS.map((level, index) => (
                   <motion.button
                     key={level.name}
@@ -150,9 +150,9 @@ export function InterviewSelector({ onStart }: InterviewSelectorProps) {
                     </AnimatePresence>
 
                     {/* Button content */}
-                    <div className="relative z-10 p-5 text-center">
+                    <div className="relative z-10 p-6 text-center">
                       <motion.div
-                        className="text-3xl mb-2"
+                        className="text-4xl mb-3"
                         animate={
                           selectedLevel === level.name
                             ? { y: [0, -6, 0] }
@@ -166,8 +166,8 @@ export function InterviewSelector({ onStart }: InterviewSelectorProps) {
                       >
                         {level.icon}
                       </motion.div>
-                      <div className="text-sm font-bold">{level.name}</div>
-                      <div className="text-xs opacity-75 mt-1 font-light">
+                      <div className="text-base font-semibold">{level.name}</div>
+                      <div className="text-sm opacity-75 mt-1 font-light">
                         {level.description}
                       </div>
                     </div>
@@ -182,11 +182,11 @@ export function InterviewSelector({ onStart }: InterviewSelectorProps) {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.8, duration: 0.5 }}
-                className="text-lg font-bold mb-5 text-[#E2E8F0] flex items-center gap-2"
+                className="text-xl font-semibold mb-6 text-[#E2E8F0] flex items-center gap-3"
               >
-                <span className="text-xl">🎓</span> Choose Domain
+                <span className="text-2xl">🎓</span> Choose Domain
               </motion.h2>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-4">
                 {DOMAINS.map((domain) => (
                   <motion.button
                     key={domain.id}
@@ -195,15 +195,15 @@ export function InterviewSelector({ onStart }: InterviewSelectorProps) {
                     whileTap={{ scale: 0.95 }}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`relative group rounded-xl p-4 transition-all overflow-hidden ${
+                    className={`relative group rounded-xl p-5 transition-all overflow-hidden ${
                       selectedDomain === domain.id
                         ? `bg-gradient-to-br ${domain.color} text-white shadow-lg`
                         : 'bg-[rgba(51,65,85,0.3)] text-[#94A3B8] hover:bg-[rgba(71,85,105,0.4)]'
                     }`}
                   >
                     <div className="relative z-10 text-center">
-                      <div className="text-2xl mb-2">{domain.icon}</div>
-                      <div className="text-sm font-semibold">{domain.name}</div>
+                      <div className="text-3xl mb-3">{domain.icon}</div>
+                      <div className="text-base font-semibold">{domain.name}</div>
                     </div>
                     {selectedDomain === domain.id && (
                       <motion.div
@@ -224,7 +224,7 @@ export function InterviewSelector({ onStart }: InterviewSelectorProps) {
               transition={{ delay: 0.9, duration: 0.5 }}
               onClick={handleStart}
               disabled={isLoading}
-              className="relative w-full py-4 px-6 rounded-xl overflow-hidden group font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="relative w-full py-5 px-8 rounded-2xl overflow-hidden group font-bold text-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {/* Animated background gradient */}
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 opacity-100 group-hover:opacity-90 transition-opacity" />
@@ -287,7 +287,7 @@ export function InterviewSelector({ onStart }: InterviewSelectorProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.1, duration: 0.5 }}
-              className="text-center text-[#64748B] text-xs mt-8 font-light"
+              className="text-center text-[#64748B] text-sm mt-10 font-light"
             >
               ✨ Real-time AI feedback • 🧪 Instant test execution • 📈 Performance tracking
             </motion.p>

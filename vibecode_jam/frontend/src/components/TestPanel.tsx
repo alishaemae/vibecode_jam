@@ -48,12 +48,12 @@ export function TestPanel() {
       className="h-full glass rounded-2xl overflow-hidden flex flex-col"
     >
       {/* Header */}
-      <div className="glass-dark border-b border-[#334155]/30 p-4 flex justify-between items-center">
+      <div className="glass-dark border-b border-[#334155]/30 p-5 flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-bold text-[#E2E8F0] flex items-center gap-2">
-            <span className="text-xl">🧪</span> Test Results
+          <h3 className="text-xl font-semibold text-[#E2E8F0] flex items-center gap-3">
+            <span className="text-2xl">🧪</span> Test Results
           </h3>
-          <p className="text-xs text-[#94A3B8] mt-1 font-light">
+          <p className="text-sm text-[#94A3B8] mt-1 font-light">
             {passedCount}/{totalCount} tests passed
           </p>
         </div>
@@ -61,7 +61,7 @@ export function TestPanel() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             onClick={() => setActiveTab('tests')}
-            className={`px-4 py-1.5 rounded-lg transition-all font-semibold ${
+            className={`px-5 py-2 rounded-lg transition-all font-semibold text-base ${
               activeTab === 'tests'
                 ? 'bg-gradient-to-r from-[#2E75B6] to-[#8B5CF6] text-white shadow-lg shadow-[#8B5CF6]/30'
                 : 'text-[#94A3B8] hover:text-[#E2E8F0]'
@@ -72,7 +72,7 @@ export function TestPanel() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             onClick={() => setActiveTab('console')}
-            className={`px-4 py-1.5 rounded-lg transition-all font-semibold ${
+            className={`px-5 py-2 rounded-lg transition-all font-semibold text-base ${
               activeTab === 'console'
                 ? 'bg-gradient-to-r from-[#2E75B6] to-[#8B5CF6] text-white shadow-lg shadow-[#8B5CF6]/30'
                 : 'text-[#94A3B8] hover:text-[#E2E8F0]'
@@ -84,12 +84,12 @@ export function TestPanel() {
       </div>
 
       {/* Progress Bar */}
-      <div className="glass-dark px-4 py-4 border-b border-[#334155]/30">
-        <div className="mb-2 flex justify-between items-center">
-          <p className="text-xs font-semibold text-[#94A3B8] uppercase tracking-wide">Progress</p>
-          <p className="text-xs font-bold text-[#10B981]">{Math.round((passedCount / totalCount) * 100)}%</p>
+      <div className="glass-dark px-5 py-5 border-b border-[#334155]/30">
+        <div className="mb-3 flex justify-between items-center">
+          <p className="text-sm font-semibold text-[#94A3B8] uppercase tracking-wide">Progress</p>
+          <p className="text-sm font-bold text-[#10B981]">{Math.round((passedCount / totalCount) * 100)}%</p>
         </div>
-        <div className="w-full bg-[#334155]/30 rounded-full h-2 overflow-hidden backdrop-blur-sm">
+        <div className="w-full bg-[#334155]/30 rounded-full h-2.5 overflow-hidden backdrop-blur-sm">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${(passedCount / totalCount) * 100}%` }}
@@ -121,11 +121,11 @@ export function TestPanel() {
                     onClick={() =>
                       setExpandedTest(expandedTest === index ? null : index)
                     }
-                    className="w-full p-3 flex items-center gap-3 transition-colors text-left"
+                    className="w-full p-4 flex items-center gap-4 transition-colors text-left"
                   >
                     <motion.div
-                      whileHover={{ scale: 1.15 }}
-                      className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${
+                      whileHover={{ scale: 1.1 }}
+                      className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-base font-bold ${
                         test.passed
                           ? 'bg-gradient-to-br from-[#10B981] to-[#059669] text-white'
                           : 'bg-gradient-to-br from-[#EF4444] to-[#DC2626] text-white'
@@ -134,8 +134,8 @@ export function TestPanel() {
                       {test.passed ? '✓' : '✗'}
                     </motion.div>
                     <div className="flex-1">
-                      <p className="font-semibold text-[#E2E8F0] text-sm">{test.name}</p>
-                      <p className="text-xs text-[#64748B] font-light">{test.time}</p>
+                      <p className="font-semibold text-[#E2E8F0] text-base">{test.name}</p>
+                      <p className="text-sm text-[#64748B] font-light">{test.time}</p>
                     </div>
                     <motion.span
                       animate={{ rotate: expandedTest === index ? 180 : 0 }}

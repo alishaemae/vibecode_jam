@@ -82,10 +82,10 @@ export function Step4PreferencesAndBio() {
         transition={{ duration: 0.5 }}
         className="text-center mb-4"
       >
-        <h2 className="text-3xl font-bold text-[#E2E8F0] mb-1 flex items-center justify-center gap-2">
+        <h2 className="text-3xl font-semibold text-[#E2E8F0] mb-2 flex items-center justify-center gap-3">
           <span className="text-3xl">⚙️</span> Финальный шаг
         </h2>
-        <p className="text-[#94A3B8] text-sm">Технологии и немного о себе</p>
+        <p className="text-[#94A3B8] text-base">Технологии и немного о себе</p>
       </motion.div>
 
       {/* Technology Preferences */}
@@ -94,11 +94,11 @@ export function Step4PreferencesAndBio() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <label className="block text-sm font-semibold text-[#E2E8F0] mb-3 flex items-center gap-2">
+        <label className="block text-base font-semibold text-[#E2E8F0] mb-4 flex items-center gap-2">
           <span className="text-xl">🛠️</span> Технологии ({selectedTechs.length})
         </label>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-3">
           {TECHNOLOGIES.map((tech, index) => {
             const isSelected = selectedTechs.includes(tech.id);
 
@@ -111,7 +111,7 @@ export function Step4PreferencesAndBio() {
                 onClick={() => toggleTechnology(tech.id)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`relative group overflow-hidden rounded-lg p-4 text-base font-medium transition-all ${
+                className={`relative group overflow-hidden rounded-xl p-5 text-base font-medium transition-all ${
                   isSelected
                     ? 'bg-gradient-to-br from-cyan-500 to-purple-500 text-white shadow-lg shadow-cyan-500/30'
                     : 'bg-[rgba(51,65,85,0.3)] text-[#94A3B8] border-2 border-[#475569]/50 hover:bg-[rgba(51,65,85,0.5)] hover:border-cyan-500/30'
@@ -157,9 +157,9 @@ export function Step4PreferencesAndBio() {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.3 }}
-        className="p-4 rounded-lg bg-[rgba(51,65,85,0.2)] border border-[#475569]/50"
+        className="p-5 rounded-xl bg-[rgba(51,65,85,0.2)] border border-[#475569]/50"
       >
-        <label className="block text-sm font-semibold text-[#E2E8F0] mb-3 flex items-center gap-2">
+        <label className="block text-base font-semibold text-[#E2E8F0] mb-4 flex items-center gap-2">
           <span className="text-lg">🎬</span> Опыт собеседований
         </label>
 
@@ -174,7 +174,7 @@ export function Step4PreferencesAndBio() {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.35 + index * 0.05 }}
-              className="flex items-center gap-2 p-2 rounded cursor-pointer group hover:bg-[rgba(51,65,85,0.3)] transition-all"
+              className="flex items-center gap-3 p-3 rounded-lg cursor-pointer group hover:bg-[rgba(51,65,85,0.3)] transition-all"
             >
               <input
                 type="radio"
@@ -184,10 +184,10 @@ export function Step4PreferencesAndBio() {
                 onChange={(e) =>
                   updateProfile({ previousInterviewExperience: e.target.value })
                 }
-                className="w-4 h-4 cursor-pointer accent-cyan-500"
+                className="w-5 h-5 cursor-pointer accent-cyan-500"
               />
-              <span className="text-sm">{option.emoji}</span>
-              <span className="text-sm text-[#E2E8F0]">{option.label}</span>
+              <span className="text-base">{option.emoji}</span>
+              <span className="text-base text-[#E2E8F0]">{option.label}</span>
             </motion.label>
           ))}
         </div>
@@ -199,9 +199,9 @@ export function Step4PreferencesAndBio() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.45 }}
       >
-        <label className="block text-sm font-semibold text-[#E2E8F0] mb-2 flex items-center gap-2">
+        <label className="block text-base font-semibold text-[#E2E8F0] mb-3 flex items-center gap-2">
           <span className="text-lg">📝</span> О себе
-          <span className="text-xs text-[#64748B] font-normal ml-auto">
+          <span className="text-sm text-[#64748B] font-normal ml-auto">
             {(profile.bio || '').length}/500
           </span>
         </label>
@@ -212,8 +212,8 @@ export function Step4PreferencesAndBio() {
             onChange={handleBioChange}
             onBlur={handleBioBlur}
             placeholder="Расскажите о себе (минимум 10 символов)"
-            rows={3}
-            className={`w-full px-4 py-2 rounded-lg backdrop-blur-xl resize-none transition-all text-sm font-medium ${
+            rows={4}
+            className={`w-full px-5 py-3 rounded-xl backdrop-blur-xl resize-none transition-all text-base font-medium ${
               errors.bio
                 ? 'bg-[rgba(239,68,68,0.1)] border border-red-500/50 focus:border-red-500'
                 : 'bg-[rgba(51,65,85,0.3)] border border-[#475569]/50 focus:border-cyan-500'
