@@ -1,0 +1,536 @@
+VIBECODE JAM - ПЛАН РАЗРАБОТКИ FRONTEND ДЛЯ CLAUDE CODE
+=============================================================
+
+ЦЕЛЬ: Создать современный, красивый и функциональный веб-интерфейс для платформы 
+технических собеседований с AI-интервьюером за 3 дня хакатона.
+
+=============================================================
+ТЕХНИЧЕСКИЙ СТЕК
+=============================================================
+
+Основа:
+- React 18 + Vite (быстрая разработка и hot reload)
+- TypeScript (опционально, но рекомендуется)
+- Tailwind CSS (быстрая стилизация)
+
+Ключевые библиотеки:
+- @monaco-editor/react - встроенная IDE
+- socket.io-client - WebSocket для real-time чата с AI
+- zustand - простой state management
+- @tanstack/react-query - управление серверным состоянием
+- framer-motion - плавные анимации
+- react-markdown - рендеринг markdown в чате
+- recharts или chart.js - графики метрик
+
+=============================================================
+СТРУКТУРА ПРОЕКТА
+=============================================================
+
+vibecode-frontend/
+├── src/
+│   ├── components/
+│   │   ├── InterviewSelector.tsx    # Выбор уровня и домена
+│   │   ├── CodeEditor.tsx           # Monaco Editor компонент
+│   │   ├── AIChat.tsx               # Чат с AI интервьюером
+│   │   ├── TestPanel.tsx            # Панель с тестами
+│   │   ├── MetricsDashboard.tsx     # Dashboard с метриками
+│   │   └── FinalReport.tsx          # Финальный отчёт
+│   │
+│   ├── hooks/
+│   │   ├── useInterview.ts          # Логика интервью
+│   │   ├── useWebSocket.ts          # WebSocket соединение
+│   │   └── useAntiCheat.ts          # Детектирование читерства
+│   │
+│   ├── store/
+│   │   └── interviewStore.ts        # Zustand store
+│   │
+│   ├── services/
+│   │   └── api.ts                   # API клиент
+│   │
+│   ├── App.tsx                      # Главный компонент
+│   └── main.tsx                     # Entry point
+│
+├── public/
+├── package.json
+└── tailwind.config.js
+
+=============================================================
+ПОШАГОВЫЙ ПЛАН РАЗРАБОТКИ
+=============================================================
+
+ДЕНЬ 1: ОСНОВА И БАЗОВЫЕ КОМПОНЕНТЫ (6-8 часов)
+------------------------------------------------
+
+Шаг 1: Инициализация проекта (30 минут)
+```bash
+npm create vite@latest vibecode-frontend -- --template react-ts
+cd vibecode-frontend
+npm install
+npm install @monaco-editor/react socket.io-client zustand @tanstack/react-query
+npm install framer-motion react-markdown recharts
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+```
+
+Шаг 2: Настройка Tailwind (15 минут)
+- Настроить tailwind.config.js с кастомной цветовой схемой
+- Добавить @tailwind директивы в index.css
+
+Шаг 3: API Service и Store (45 минут)
+Создать:
+- src/services/api.ts - axios клиент с базовыми endpoints
+- src/store/interviewStore.ts - Zustand store для состояния интервью
+
+Шаг 4: InterviewSelector компонент (2 часа)
+ДИЗАЙН:
+- Центрированная карточка на полный экран
+- Градиентный фон (purple/blue)
+- Анимированные карточки выбора уровня (Junior/Middle/Senior)
+- Dropdown для выбора домена (Algorithms/Backend/Frontend)
+- Плавная анимация перехода к редактору
+
+ФУНКЦИОНАЛ:
+- Выбор уровня → визуальное выделение
+- Выбор домена → показать описание
+- Кнопка "Start Interview" → POST /api/interview/start
+- Переход к CodeEditor с анимацией
+
+Шаг 5: Базовый Layout и роутинг (1 час)
+- App.tsx с условным рендерингом:
+  * InterviewSelector (начало)
+  * InterviewWorkspace (активное интервью)
+  * FinalReport (конец)
+
+Шаг 6: Monaco Editor интеграция (2 часа)
+КОМПОНЕНТ: CodeEditor.tsx
+- Интеграция @monaco-editor/react
+- Темная тема (vs-dark)
+- Поддержка языков: Python, JavaScript, Java
+- Split layout: задача слева (40%), код справа (60%)
+- Кнопки: "Run Tests", "Submit Solution"
+
+ДИЗАЙН:
+- Minimalist, профессиональный вид
+- Кнопки с иконками и hover эффектами
+- Прогресс-бар вверху экрана
+
+---
+
+ДЕНЬ 2: AI ЧАТ, ТЕСТЫ, МЕТРИКИ (8-10 часов)
+-------------------------------------------
+
+Шаг 7: WebSocket Hook (1 час)
+ФАЙЛ: src/hooks/useWebSocket.ts
+```typescript
+export function useWebSocket(sessionId: string) {
+  const [messages, setMessages] = useState([]);
+  const [isConnected, setIsConnected] = useState(false);
+  
+  useEffect(() => {
+    const socket = io(`ws://localhost:8000/ws/interview/${sessionId}`);
+    
+    socket.on('connect', () => setIsConnected(true));
+    socket.on('ai_message', (msg) => {
+      // Добавить typing effect
+      typeMessage(msg);
+    });
+    
+    return () => socket.disconnect();
+  }, [sessionId]);
+  
+  return { messages, sendMessage, isConnected };
+}
+```
+
+Шаг 8: AIChat компонент (3 часа)
+ДИЗАЙН:
+- Правая панель (30% экрана)
+- Сообщения в виде пузырьков (как iMessage)
+- AI сообщения: светлый фон + аватар робота
+- Кандидат: темный фон + user icon
+- Typing indicator когда AI "думает"
+- Input снизу с автофокусом
+
+ФУНКЦИОНАЛ:
+- WebSocket соединение через useWebSocket
+- Streaming ответы с typing effect (задержка 20ms между символами)
+- Markdown рендеринг в сообщениях AI
+- Автоскролл к новым сообщениям
+- История сохраняется в store
+
+Шаг 9: TestPanel компонент (2 часа)
+ДИЗАЙН:
+- Панель под кодом (20% высоты)
+- Табы: "Visible Tests" | "Console Output"
+- Тесты: зелёная галочка ✓ или красный крест ✗
+- Лог выполнения с syntax highlighting
+- Время выполнения для каждого теста
+
+ФУНКЦИОНАЛ:
+- Отображение результатов после "Run Tests"
+- Expandable детали каждого теста
+- Цветовая индикация (зеленый/красный)
+
+Шаг 10: MetricsDashboard компонент (2.5 часа)
+ДИЗАЙН:
+- Топ панель (фиксированная)
+- Компактные карточки с метриками:
+  * Текущая задача: "Task 1/3"
+  * Таймер: "08:34"
+  * Тесты: "4/5 passed"
+  * Общий score: "75%"
+- Прогресс-бар текущего интервью
+- Маленькие иконки для визуализации
+
+ФУНКЦИОНАЛ:
+- Real-time обновление через WebSocket
+- Анимация изменения цифр (count-up effect)
+- Цветовая индикация score (red < 50, yellow 50-75, green > 75)
+
+Шаг 11: AntiCheat Hook (1.5 часа)
+ФАЙЛ: src/hooks/useAntiCheat.ts
+```typescript
+export function useAntiCheat(sessionId: string) {
+  useEffect(() => {
+    // Paste detection
+    const handlePaste = (e) => {
+      api.post('/api/anticheat/event', {
+        session_id: sessionId,
+        event_type: 'paste',
+        timestamp: Date.now()
+      });
+      // Show warning toast
+    };
+    
+    // DevTools detection
+    const detectDevTools = () => {
+      const threshold = 160;
+      if (window.outerHeight - window.innerHeight > threshold) {
+        api.post('/api/anticheat/event', {
+          event_type: 'devtools_open'
+        });
+      }
+    };
+    
+    // Tab switch detection
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        api.post('/api/anticheat/event', {
+          event_type: 'tab_switch'
+        });
+      }
+    };
+    
+    document.addEventListener('paste', handlePaste);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    const interval = setInterval(detectDevTools, 1000);
+    
+    return () => {
+      document.removeEventListener('paste', handlePaste);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(interval);
+    };
+  }, [sessionId]);
+}
+```
+
+---
+
+ДЕНЬ 3: ФИНАЛЬНЫЙ ОТЧЁТ, ПОЛИРОВКА, АНИМАЦИИ (8 часов)
+------------------------------------------------------
+
+Шаг 12: FinalReport компонент (3 часа)
+ДИЗАЙН:
+- Полноэкранная страница с красивым градиентом
+- Анимированное появление элементов (stagger)
+- Секции:
+  1. Overall Score (большая круговая диаграмма)
+  2. Task Breakdown (таблица с задачами и scores)
+  3. Strengths (зелёные badges)
+  4. Areas for Improvement (желтые badges)
+  5. AI Feedback (текстовый блок с markdown)
+  6. Детальные метрики (графики)
+- Кнопка "Download PDF Report"
+- Кнопка "Start New Interview"
+
+ФУНКЦИОНАЛ:
+- Fetch финального отчёта: GET /api/report/{session_id}
+- Анимация чисел и графиков при появлении
+- Экспорт в PDF через API
+
+Шаг 13: Адаптивность - визуализация (2 часа)
+ДОБАВИТЬ В AIChat:
+- Специальное сообщение когда уровень меняется:
+  "🎉 Excellent work! Your score was 90%. 
+   Moving to MIDDLE level challenges!"
+- Анимация перехода задачи:
+  * Fade out старой задачи
+  * Progress bar updates
+  * Fade in новой задачи с typing effect
+
+ДОБАВИТЬ В MetricsDashboard:
+- Badge с текущим уровнем (Junior/Middle/Senior)
+- Анимация при повышении уровня (scale + glow effect)
+
+Шаг 14: Полировка UI (2 часа)
+- Добавить loading states везде
+- Error boundaries для обработки ошибок
+- Toast notifications для:
+  * Submit success
+  * Tests failed
+  * Античит warnings
+  * Connection lost
+- Smooth transitions между всеми состояниями
+- Keyboard shortcuts:
+  * Ctrl+Enter = Run Tests
+  * Ctrl+Shift+S = Submit
+  * Ctrl+/ = Focus chat
+
+Шаг 15: Финальное тестирование (1 час)
+- Проверить все flows
+- Тест на разных разрешениях (1920x1080, 1366x768)
+- Проверить WebSocket переподключение
+- Проверить все анимации
+
+=============================================================
+КЛЮЧЕВЫЕ ДИЗАЙН-РЕШЕНИЯ
+=============================================================
+
+Цветовая палитра:
+- Primary: #2E75B6 (синий)
+- Secondary: #8B5CF6 (фиолетовый)
+- Success: #10B981 (зелёный)
+- Warning: #F59E0B (оранжевый)
+- Error: #EF4444 (красный)
+- Background: #0F172A (тёмно-синий)
+- Surface: #1E293B (серо-синий)
+- Text: #F8FAFC (светлый)
+
+Шрифты:
+- Headers: Inter, sans-serif (bold)
+- Body: Inter, sans-serif (regular)
+- Code: JetBrains Mono, monospace
+
+Анимации:
+- Все transitions: 200-300ms
+- ease-in-out для большинства
+- spring animation для модальных окон
+- stagger на 50ms для списков
+
+=============================================================
+ДЕМО-ВИДЕО CHECKLIST
+=============================================================
+
+Убедиться что видно:
+✓ Выбор уровня с анимацией
+✓ Первая задача появляется
+✓ Код пишется с подсветкой синтаксиса
+✓ Run Tests → зелёные галочки
+✓ AI задаёт вопрос в чате
+✓ Ответ кандидата
+✓ AI даёт feedback с typing effect
+✓ "Moving to Middle level" сообщение с анимацией
+✓ Вторая задача сложнее
+✓ Ошибка в коде → красные тесты
+✓ AI объясняет ошибку
+✓ Исправление → всё зелёное
+✓ Paste события → warning toast
+✓ DevTools → blocked message
+✓ Метрики обновляются real-time
+✓ Финальный отчёт с графиками
+✓ Кнопка Download PDF
+
+=============================================================
+ПРИОРИТЕТЫ ДЛЯ ОГРАНИЧЕННОГО ВРЕМЕНИ
+=============================================================
+
+MUST HAVE (критично для демо):
+1. InterviewSelector
+2. CodeEditor с Monaco
+3. AIChat с WebSocket
+4. TestPanel с результатами
+5. Базовые метрики (таймер, score)
+6. FinalReport
+
+NICE TO HAVE (если успеваем):
+1. Сложные анимации
+2. Графики в метриках
+3. Полный античит
+4. Keyboard shortcuts
+5. PDF export
+
+CAN SKIP (если не успеваем):
+1. Адаптивность под мобильные
+2. Темная/светлая тема
+3. Настройки пользователя
+4. История предыдущих интервью
+
+=============================================================
+ПРИМЕРЫ КОДА ДЛЯ БЫСТРОГО СТАРТА
+=============================================================
+
+API Service (src/services/api.ts):
+```typescript
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:8000/api',
+});
+
+export const interviewAPI = {
+  start: (data: { level: string; domain: string }) =>
+    api.post('/interview/start', data),
+  
+  runCode: (data: { session_id: string; code: string; language: string }) =>
+    api.post('/code/run', data),
+  
+  submitCode: (data: { session_id: string; code: string }) =>
+    api.post('/code/submit', data),
+  
+  getMetrics: (sessionId: string) =>
+    api.get(`/metrics/${sessionId}`),
+  
+  getReport: (sessionId: string) =>
+    api.get(`/report/${sessionId}`),
+};
+
+export default api;
+```
+
+Zustand Store (src/store/interviewStore.ts):
+```typescript
+import { create } from 'zustand';
+
+interface InterviewState {
+  sessionId: string | null;
+  currentTask: any | null;
+  code: string;
+  level: string;
+  domain: string;
+  metrics: any;
+  isInterviewActive: boolean;
+  
+  setSessionId: (id: string) => void;
+  setCurrentTask: (task: any) => void;
+  setCode: (code: string) => void;
+  updateMetrics: (metrics: any) => void;
+  startInterview: (level: string, domain: string) => void;
+  endInterview: () => void;
+}
+
+export const useInterviewStore = create<InterviewState>((set) => ({
+  sessionId: null,
+  currentTask: null,
+  code: '',
+  level: 'junior',
+  domain: 'algorithms',
+  metrics: {},
+  isInterviewActive: false,
+  
+  setSessionId: (id) => set({ sessionId: id }),
+  setCurrentTask: (task) => set({ currentTask: task }),
+  setCode: (code) => set({ code }),
+  updateMetrics: (metrics) => set({ metrics }),
+  startInterview: (level, domain) => 
+    set({ level, domain, isInterviewActive: true }),
+  endInterview: () => 
+    set({ isInterviewActive: false }),
+}));
+```
+
+Простой компонент с анимацией:
+```typescript
+import { motion } from 'framer-motion';
+
+export function AnimatedCard({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="bg-slate-800 rounded-lg p-6 shadow-xl"
+    >
+      {children}
+    </motion.div>
+  );
+}
+```
+
+=============================================================
+ЗАПУСК И ДЕПЛОЙ
+=============================================================
+
+Локальная разработка:
+```bash
+npm run dev
+# Откроется на http://localhost:5173
+```
+
+Production build:
+```bash
+npm run build
+# Результат в папке dist/
+```
+
+Docker (опционально):
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+RUN npm install -g serve
+EXPOSE 3000
+CMD ["serve", "-s", "dist", "-l", "3000"]
+```
+
+=============================================================
+ИТОГОВЫЙ ЧЕКЛИСТ ПЕРЕД ДЕМО
+=============================================================
+
+□ Все компоненты работают без ошибок в консоли
+□ WebSocket соединение стабильно
+□ Анимации плавные (60 FPS)
+□ Loading states везде где нужно
+□ Typing effect в AI чате работает
+□ Метрики обновляются real-time
+□ Адаптивность под уровень работает
+□ Античит события логируются
+□ Финальный отчёт генерируется
+□ UI выглядит профессионально
+□ Нет placeholder текста ("Lorem ipsum")
+□ Все кнопки имеют hover states
+□ Проверено в Chrome, Firefox
+□ Проект собирается без warnings
+
+=============================================================
+КОНТАКТЫ И РЕСУРСЫ
+=============================================================
+
+Tailwind UI components:
+https://tailwindui.com/components
+
+Monaco Editor docs:
+https://microsoft.github.io/monaco-editor/
+
+Framer Motion examples:
+https://www.framer.com/motion/examples/
+
+Recharts gallery:
+https://recharts.org/en-US/examples
+
+Socket.IO client docs:
+https://socket.io/docs/v4/client-api/
+
+=============================================================
+
+УДАЧИ НА ХАКАТОНЕ! 🚀
+
+Этот план даст вам полностью рабочий и красивый фронтенд,
+который впечатлит жюри своей отполированностью и продуманностью.
+
+Фокусируйтесь на MUST HAVE функциях в первую очередь,
+а NICE TO HAVE добавляйте только если остаётся время.
+
+Главное - чтобы демо-видео было плавным и показывало все ключевые фичи!
