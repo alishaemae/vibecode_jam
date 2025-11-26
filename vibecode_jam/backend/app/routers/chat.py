@@ -1,6 +1,6 @@
 from fastapi import APIRouter, WebSocket
 from app.services.llm_service import stream_ai_response
-from app.redis_client import get_redis
+from vibecode_jam.backend.app.redis.redis_client import get_redis
 
 router = APIRouter()
 

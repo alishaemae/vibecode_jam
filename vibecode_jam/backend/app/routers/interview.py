@@ -4,7 +4,7 @@ from uuid import uuid4
 from app.db import get_db
 from app.schemas.interview import InterviewStartRequest, InterviewResponse, AdaptTaskResponse
 from app.models import Interview, Task
-from app.redis_client import get_redis
+from vibecode_jam.backend.app.redis.redis_client import get_redis
 
 router = APIRouter()
 
