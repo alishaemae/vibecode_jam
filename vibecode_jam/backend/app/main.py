@@ -10,6 +10,7 @@ from app.services.scibox import (
     AIDialogue, AntiCheatLLM, EmbeddingSearch
 )
 from app.services.cache import RedisCache
+from app.services.mock_task_generator import MockTaskGenerator
 
 # Setup logging
 logging.basicConfig(
@@ -40,18 +41,28 @@ async def lifespan(app: FastAPI):
     logger.info("Starting VibeCode Jam Backend...")
 
     # Initialize Scibox client
-    scibox_api_key = os.getenv("SCIBOX_API_KEY", "sk-Jw0mXI7PMgeFYVCW8e8PKw")
-    scibox_client = SciboxClient(api_key=scibox_api_key)
-    await scibox_client.__aenter__()
-    logger.info("Scibox client initialized")
+    try:
+        scibox_api_key = os.getenv("SCIBOX_API_KEY", "sk-Jw0mXI7PMgeFYVCW8e8PKw")
+        scibox_client = SciboxClient(api_key=scibox_api_key)
+        await scibox_client.__aenter__()
+        logger.info("Scibox client initialized")
 
-    # Initialize services
-    task_generator = TaskGenerator(scibox_client)
-    solution_evaluator = SolutionEvaluator(scibox_client)
-    ai_dialogue = AIDialogue(scibox_client)
-    anti_cheat_llm = AntiCheatLLM(scibox_client)
-    embedding_search = EmbeddingSearch(scibox_client)
-    logger.info("All Scibox services initialized")
+        # Initialize services
+        task_generator = TaskGenerator(scibox_client)
+        solution_evaluator = SolutionEvaluator(scibox_client)
+        ai_dialogue = AIDialogue(scibox_client)
+        anti_cheat_llm = AntiCheatLLM(scibox_client)
+        embedding_search = EmbeddingSearch(scibox_client)
+        logger.info("All Scibox services initialized")
+    except Exception as e:
+        logger.warning(f"Scibox initialization failed: {e}. Using mock services for development.")
+        scibox_client = None
+        task_generator = MockTaskGenerator()
+        solution_evaluator = None
+        ai_dialogue = None
+        anti_cheat_llm = None
+        embedding_search = None
+        logger.info("Mock services initialized")
 
     # Initialize cache
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
