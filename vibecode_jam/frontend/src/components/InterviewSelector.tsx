@@ -286,6 +286,38 @@ export function InterviewSelector({ onStart }: InterviewSelectorProps) {
               </div>
             </motion.button>
 
+            {/* Error message display */}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="mt-4 relative"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 via-rose-500/10 to-red-500/20 rounded-xl blur-xl" />
+                  <div className="relative backdrop-blur-xl bg-[rgba(15,23,42,0.85)] border border-red-500/30 rounded-xl p-4 shadow-lg">
+                    <div className="flex gap-3 items-start">
+                      <span className="text-red-400 text-lg flex-shrink-0">⚠️</span>
+                      <div className="flex-grow min-w-0">
+                        <p className="text-red-200 text-sm font-medium">Error</p>
+                        <p className="text-red-100/80 text-sm mt-1 break-words">{error}</p>
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setError(null)}
+                        className="flex-shrink-0 text-red-400 hover:text-red-300 text-lg transition-colors"
+                      >
+                        ✕
+                      </motion.button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Footer message */}
             <motion.p
               initial={{ opacity: 0 }}

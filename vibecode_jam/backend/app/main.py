@@ -33,17 +33,6 @@ embedding_search: EmbeddingSearch = None
 cache: RedisCache = None
 
 
-async def init_db_tables():
-    """Initialize database tables on startup"""
-    try:
-        logger.info("Initializing database tables...")
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        logger.info("Database tables initialized successfully")
-    except Exception as e:
-        logger.error(f"Error initializing database tables: {e}")
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -54,9 +43,6 @@ async def lifespan(app: FastAPI):
 
     # Startup
     logger.info("Starting VibeCode Jam Backend...")
-
-    # Initialize database tables
-    await init_db_tables()
 
     # Initialize Scibox client
     try:
