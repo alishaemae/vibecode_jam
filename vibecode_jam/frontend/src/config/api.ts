@@ -3,8 +3,34 @@
  * Environment-based configuration for API endpoints
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL || 'http://localhost:8000';
+// Determine API base URL dynamically
+// If running in browser: use localhost:8000
+// If running in development: use the current host
+const getApiBaseUrl = (): string => {
+  // Check if running in browser
+  if (typeof window !== 'undefined') {
+    // Use environment variable if set
+    const envUrl = import.meta.env.VITE_API_BASE_URL;
+    if (envUrl && envUrl !== 'http://backend:8000') {
+      return envUrl;
+    }
+
+    // Use localhost for browser (cannot resolve 'backend' from browser)
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    const port = '8000';
+
+    // If running on localhost:5173, connect to localhost:8000
+    // Otherwise use the current hostname with port 8000
+    return `${protocol}//${hostname === 'localhost' || hostname === '127.0.0.1' ? 'localhost' : hostname}:${port}`;
+  }
+
+  // Server-side fallback
+  return 'http://localhost:8000';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+const WS_BASE_URL = getApiBaseUrl();
 
 export const config = {
   apiBaseUrl: API_BASE_URL,
