@@ -2,9 +2,11 @@ fastapi[all]
 uvicorn[standard]
 sqlalchemy[asyncio]
 asyncpg
-aioredis
+redis[asyncio]
 pydantic
 docker
 httpx
 aiohttp
 python-dotenv
+numpy
+scikit-learn

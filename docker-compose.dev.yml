@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: vibecode_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: vibecode_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./vibecode_jam/infrastructure/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vibecode_network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: vibecode_redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vibecode_network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./vibecode_jam/backend
+      dockerfile: Dockerfile
+    container_name: vibecode_backend
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENVIRONMENT=development
+      - DEBUG=True
+      - LOG_LEVEL=INFO
+      - SCIBOX_API_KEY=sk-Jw0mXI7PMgeFYVCW8e8PKw
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@postgres:5432/vibecode_db
+      - REDIS_URL=redis://redis:6379
+      - HOST=0.0.0.0
+      - PORT=8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./vibecode_jam/backend:/app
+    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - vibecode_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  vibecode_network:
+    driver: bridge
