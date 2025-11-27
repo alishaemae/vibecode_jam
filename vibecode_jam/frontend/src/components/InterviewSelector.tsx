@@ -24,9 +24,11 @@ export function InterviewSelector({ onStart }: InterviewSelectorProps) {
   const [selectedLevel, setSelectedLevel] = useState<string>('Junior');
   const [selectedDomain, setSelectedDomain] = useState<string>('algorithms');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { startInterview } = useInterviewStore();
 
   const handleStart = async () => {
+    setError(null);
     setIsLoading(true);
     try {
       const response = await interviewAPI.start({
@@ -36,7 +38,9 @@ export function InterviewSelector({ onStart }: InterviewSelectorProps) {
       const sessionId = response.data.session_id;
       startInterview(selectedLevel.toLowerCase(), selectedDomain);
       onStart(sessionId);
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Failed to start interview';
+      setError(errorMessage);
       console.error('Failed to start interview:', error);
     } finally {
       setIsLoading(false);

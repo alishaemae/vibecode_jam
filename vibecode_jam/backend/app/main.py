@@ -11,6 +11,10 @@ from app.services.scibox import (
 )
 from app.services.cache import RedisCache
 from app.services.mock_task_generator import MockTaskGenerator
+from app.db.session import engine
+from app.db.models.base import Base
+# Import all models to register them with SQLAlchemy
+from app.db.models import interview as interview_model, task, solution, metric, chat_message, embedding
 
 # Setup logging
 logging.basicConfig(
@@ -29,6 +33,17 @@ embedding_search: EmbeddingSearch = None
 cache: RedisCache = None
 
 
+async def init_db_tables():
+    """Initialize database tables on startup"""
+    try:
+        logger.info("Initializing database tables...")
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database tables initialized successfully")
+    except Exception as e:
+        logger.error(f"Error initializing database tables: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -39,6 +54,9 @@ async def lifespan(app: FastAPI):
 
     # Startup
     logger.info("Starting VibeCode Jam Backend...")
+
+    # Initialize database tables
+    await init_db_tables()
 
     # Initialize Scibox client
     try:
