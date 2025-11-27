@@ -89,6 +89,18 @@ app.include_router(code.router, prefix="/api/code", tags=["code"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 
 
+# Root endpoint
+@app.get("/")
+async def root():
+    """Root endpoint - redirects to API documentation"""
+    return {
+        "message": "VibeCode Jam Backend",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health"
+    }
+
+
 # Health check endpoints
 @app.get("/health")
 async def health():

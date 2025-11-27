@@ -1,8 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List
 
 class InterviewStartRequest(BaseModel):
-    candidate_email: str
+    candidate_email: Optional[str] = Field(default="candidate@example.com", description="Email of the candidate")
     level: str
     domain: str
 
