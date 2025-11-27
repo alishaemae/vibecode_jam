@@ -1,9 +1,21 @@
 import docker
+import logging
 from tempfile import TemporaryDirectory
 from pathlib import Path
 from app.config import settings
 
-client = docker.from_env()
+logger = logging.getLogger(__name__)
+_client = None
+
+def _get_docker_client():
+    global _client
+    if _client is None:
+        try:
+            _client = docker.from_env()
+        except Exception as e:
+            logger.error(f"Failed to initialize Docker client: {e}")
+            raise
+    return _client
 
 def run_code(code: str, language: str):
     image_map = {
@@ -21,7 +33,8 @@ def run_code(code: str, language: str):
         code_file.write_text(code)
 
         try:
-            container = client.containers.run(
+            docker_client = _get_docker_client()
+            container = docker_client.containers.run(
                 image=image,
                 command=f"timeout {settings.DOCKER_TIMEOUT}s {'python' if language=='python' else 'node'} {code_file.name}",
                 volumes={tmpdir: {"bind": "/code", "mode": "ro"}},

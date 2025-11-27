@@ -39,6 +39,8 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
     depends_on:
       postgres:
         condition: service_healthy
@@ -46,7 +48,7 @@ services:
         condition: service_healthy
     volumes:
       - ../backend/app:/app/app
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:rw
 
   frontend:
     image: node:20-alpine
