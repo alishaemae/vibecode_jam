@@ -1,0 +1,973 @@
+ПЛАН ИНТЕГРАЦИИ SCIBOX LLM ДЛЯ VIBECODE JAM
+=====================================================
+
+API КЛЮЧ: sk-Jw0mXI7PMgeFYVCW8e8PKw
+BASE URL: https://api.scibox.ai/v1 (или уточни в документации)
+
+ДОСТУПНЫЕ МОДЕЛИ:
+- qwen3-32b-awq (2 RPS) - универсальная чат-модель
+- qwen3-coder-30b-a3b-instruct-fp8 (2 RPS) - кодовая модель
+- bge-m3 (7 RPS) - embedding модель
+
+=====================================================
+ШАГ 1: СОЗДАТЬ БАЗОВЫЙ КЛИЕНТ ДЛЯ SCIBOX API
+=====================================================
+
+Создай файл: backend/services/scibox_client.py
+
+```python
+import aiohttp
+import asyncio
+from typing import Dict, List, Optional, AsyncGenerator
+from datetime import datetime, timedelta
+import logging
+
+logger = logging.getLogger(__name__)
+
+class SciboxClient:
+    """Клиент для работы с Scibox API"""
+    
+    def __init__(self, api_key: str, base_url: str = "https://api.scibox.ai/v1"):
+        self.api_key = api_key
+        self.base_url = base_url
+        self.session: Optional[aiohttp.ClientSession] = None
+        
+    async def __aenter__(self):
+        self.session = aiohttp.ClientSession()
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.session:
+            await self.session.close()
+    
+    async def chat_completion(
+        self, 
+        model: str,
+        messages: List[Dict[str, str]],
+        temperature: float = 0.7,
+        max_tokens: int = 2000,
+        stream: bool = False
+    ) -> Dict:
+        """
+        Базовый метод для chat completion
+        
+        Args:
+            model: "qwen3-32b-awq" или "qwen3-coder-30b-a3b-instruct-fp8"
+            messages: [{"role": "user", "content": "..."}]
+            temperature: 0.0 - 1.0
+            max_tokens: максимум токенов в ответе
+            stream: использовать streaming или нет
+        """
+        
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "stream": stream
+        }
+        
+        try:
+            async with self.session.post(
+                f"{self.base_url}/chat/completions",
+                headers=headers,
+                json=payload
+            ) as response:
+                response.raise_for_status()
+                
+                if stream:
+                    return response  # Вернём response для streaming
+                
+                data = await response.json()
+                return data
+                
+        except aiohttp.ClientError as e:
+            logger.error(f"Scibox API error: {e}")
+            raise
+    
+    async def get_embedding(self, text: str, model: str = "bge-m3") -> List[float]:
+        """
+        Получить embedding для текста
+        
+        Args:
+            text: текст для embedding
+            model: "bge-m3"
+        """
+        
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": model,
+            "input": text
+        }
+        
+        try:
+            async with self.session.post(
+                f"{self.base_url}/embeddings",
+                headers=headers,
+                json=payload
+            ) as response:
+                response.raise_for_status()
+                data = await response.json()
+                
+                # Формат ответа может отличаться, проверь в документации
+                return data['data'][0]['embedding']
+                
+        except aiohttp.ClientError as e:
+            logger.error(f"Scibox embedding error: {e}")
+            raise
+```
+
+ТЕСТ ПОДКЛЮЧЕНИЯ:
+```python
+async def test_connection():
+    async with SciboxClient(api_key="sk-Jw0mXI7PMgeFYVCW8e8PKw") as client:
+        # Простой тест
+        messages = [
+            {"role": "user", "content": "Скажи привет"}
+        ]
+        
+        response = await client.chat_completion(
+            model="qwen3-32b-awq",
+            messages=messages,
+            temperature=0.7,
+            max_tokens=100
+        )
+        
+        print("Ответ от Scibox:")
+        print(response['choices'][0]['message']['content'])
+
+# Запустить: asyncio.run(test_connection())
+```
+
+=====================================================
+ШАГ 2: СОЗДАТЬ RATE LIMITER
+=====================================================
+
+Создай файл: backend/services/rate_limiter.py
+
+```python
+import asyncio
+from datetime import datetime, timedelta
+from typing import Dict
+
+class RateLimiter:
+    """Rate limiter для соблюдения ограничений Scibox"""
+    
+    def __init__(self, limits: Dict[str, int]):
+        """
+        Args:
+            limits: {"qwen3-32b-awq": 2, "qwen3-coder-30b": 2, "bge-m3": 7}
+        """
+        self.limits = limits
+        self.requests = {model: [] for model in limits.keys()}
+        self.locks = {model: asyncio.Lock() for model in limits.keys()}
+    
+    async def acquire(self, model: str):
+        """Ждёт разрешения на запрос для данной модели"""
+        async with self.locks[model]:
+            now = datetime.now()
+            
+            # Удаляем запросы старше 60 секунд
+            self.requests[model] = [
+                req_time for req_time in self.requests[model]
+                if now - req_time < timedelta(seconds=60)
+            ]
+            
+            # Если достигли лимита, ждём
+            if len(self.requests[model]) >= self.limits[model]:
+                oldest = self.requests[model][0]
+                wait_time = (oldest + timedelta(seconds=60) - now).total_seconds()
+                
+                if wait_time > 0:
+                    print(f"Rate limit для {model}: ждём {wait_time:.1f}s")
+                    await asyncio.sleep(wait_time)
+                    return await self.acquire(model)
+            
+            # Добавляем новый запрос
+            self.requests[model].append(now)
+```
+
+ИНТЕГРАЦИЯ В КЛИЕНТ:
+```python
+class SciboxClient:
+    def __init__(self, api_key: str, base_url: str = "https://api.scibox.ai/v1"):
+        self.api_key = api_key
+        self.base_url = base_url
+        self.session: Optional[aiohttp.ClientSession] = None
+        
+        # Инициализируем rate limiter
+        self.rate_limiter = RateLimiter({
+            "qwen3-32b-awq": 2,
+            "qwen3-coder-30b-a3b-instruct-fp8": 2,
+            "bge-m3": 7
+        })
+    
+    async def chat_completion(self, model: str, messages: List[Dict], ...):
+        # Ждём разрешения от rate limiter
+        await self.rate_limiter.acquire(model)
+        
+        # ... остальной код
+```
+
+=====================================================
+ШАГ 3: СОЗДАТЬ СЕРВИСЫ ДЛЯ КОНКРЕТНЫХ ЗАДАЧ
+=====================================================
+
+3.1 ГЕНЕРАТОР ЗАДАЧ
+-------------------
+
+Создай файл: backend/services/task_generator.py
+
+```python
+from typing import Dict, Optional, List
+import json
+from .scibox_client import SciboxClient
+
+class TaskGenerator:
+    def __init__(self, client: SciboxClient):
+        self.client = client
+    
+    async def generate_task(
+        self,
+        level: str,  # "junior", "middle", "senior"
+        domain: str,  # "algorithms", "backend", "frontend"
+        previous_score: Optional[float] = None
+    ) -> Dict:
+        """Генерирует задачу через qwen3-32b-awq"""
+        
+        # Формируем промпт
+        system_prompt = """Ты опытный технический интервьюер.
+Генерируй задачи для собеседований программистов.
+Всегда отвечай в формате JSON."""
+
+        adaptation = ""
+        if previous_score is not None:
+            if previous_score >= 85:
+                adaptation = "Увеличь сложность значительно."
+            elif previous_score < 50:
+                adaptation = "Уменьши сложность."
+        
+        user_prompt = f"""Сгенерируй задачу для собеседования:
+
+Уровень: {level}
+Область: {domain}
+{adaptation}
+
+Требования:
+- Решается за 10-15 минут
+- 3 примера тестов
+- 5 скрытых тестов
+- Чёткий формат ввода/вывода
+
+Ответ в JSON:
+{{
+    "title": "Название задачи",
+    "description": "Подробное описание",
+    "input_format": "Формат ввода",
+    "output_format": "Формат вывода",
+    "examples": [
+        {{"input": "...", "output": "...", "explanation": "..."}}
+    ],
+    "hidden_tests": [
+        {{"input": "...", "output": "...", "edge_case_type": "..."}}
+    ],
+    "time_limit": "2s",
+    "memory_limit": "256MB"
+}}"""
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+        
+        response = await self.client.chat_completion(
+            model="qwen3-32b-awq",
+            messages=messages,
+            temperature=0.8,  # Высокая для разнообразия
+            max_tokens=2000
+        )
+        
+        # Извлекаем JSON
+        content = response['choices'][0]['message']['content']
+        
+        # Убираем markdown если есть
+        if content.startswith('```json'):
+            content = content[7:-3]
+        elif content.startswith('```'):
+            content = content[3:-3]
+        
+        task_data = json.loads(content.strip())
+        
+        return task_data
+```
+
+3.2 ОЦЕНЩИК РЕШЕНИЙ
+-------------------
+
+Создай файл: backend/services/solution_evaluator.py
+
+```python
+from typing import Dict
+import json
+from .scibox_client import SciboxClient
+
+class SolutionEvaluator:
+    def __init__(self, client: SciboxClient):
+        self.client = client
+    
+    async def evaluate_solution(
+        self,
+        task: Dict,
+        code: str,
+        test_results: Dict,
+        execution_time_ms: float
+    ) -> Dict:
+        """Оценивает решение кандидата через qwen3-32b-awq"""
+        
+        system_prompt = """Ты senior технический интервьюер.
+Оценивай решения объективно и конструктивно.
+Всегда отвечай в JSON формате."""
+
+        user_prompt = f"""Оцени решение кандидата:
+
+Задача: {task['title']}
+Описание: {task['description']}
+
+Код кандидата:
+```
+{code}
+```
+
+Результаты тестов:
+- Видимые тесты: {test_results['visible_passed']}/{test_results['visible_total']}
+- Скрытые тесты: {test_results['hidden_passed']}/{test_results['hidden_total']}
+- Время выполнения: {execution_time_ms}ms
+
+Оцени по критериям:
+1. Корректность (0-100)
+2. Качество кода (0-100)
+3. Эффективность (0-100)
+
+Ответ в JSON:
+{{
+    "correctness_score": 0-100,
+    "code_quality_score": 0-100,
+    "efficiency_score": 0-100,
+    "overall_score": 0-100,
+    "feedback": {{
+        "summary": "Краткая оценка (2-3 предложения)",
+        "strengths": ["Сильная сторона 1", "Сильная сторона 2"],
+        "improvements": ["Что улучшить 1", "Что улучшить 2"]
+    }},
+    "next_level_recommendation": "junior/middle/senior"
+}}"""
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+        
+        response = await self.client.chat_completion(
+            model="qwen3-32b-awq",
+            messages=messages,
+            temperature=0.3,  # Низкая для консистентности
+            max_tokens=1500
+        )
+        
+        content = response['choices'][0]['message']['content']
+        
+        # Очистка от markdown
+        if '```json' in content:
+            content = content.split('```json')[1].split('```')[0]
+        
+        evaluation = json.loads(content.strip())
+        
+        return evaluation
+```
+
+3.3 AI ДИАЛОГ
+-------------
+
+Создай файл: backend/services/ai_dialogue.py
+
+```python
+from typing import List, Dict, AsyncGenerator
+from .scibox_client import SciboxClient
+
+class AIDialogue:
+    def __init__(self, client: SciboxClient):
+        self.client = client
+        self.conversation_history: List[Dict] = []
+    
+    async def send_message(
+        self,
+        message: str,
+        context: Dict
+    ) -> AsyncGenerator[str, None]:
+        """
+        Отправляет сообщение AI и получает streaming ответ
+        
+        Args:
+            message: сообщение от кандидата
+            context: контекст интервью (задача, код и т.д.)
+        
+        Yields:
+            Части ответа AI по мере генерации
+        """
+        
+        system_prompt = """Ты дружелюбный AI-интервьюер по имени Alex.
+Твоя задача - помочь кандидату раскрыть свои навыки через диалог.
+Задавай уточняющие вопросы, но не давай прямых ответов.
+Будь профессиональным, но не формальным."""
+
+        # Добавляем контекст задачи
+        context_message = f"""Текущий контекст интервью:
+Задача: {context.get('task_title', 'N/A')}
+Код написан: {'Да' if context.get('code') else 'Нет'}
+Тесты пройдены: {context.get('tests_status', 'Не запущены')}"""
+
+        # Добавляем сообщение кандидата в историю
+        self.conversation_history.append({
+            "role": "user",
+            "content": message
+        })
+        
+        # Формируем полный контекст
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": context_message}
+        ] + self.conversation_history[-10:]  # Последние 10 сообщений
+        
+        # Получаем streaming ответ
+        response = await self.client.chat_completion(
+            model="qwen3-32b-awq",
+            messages=messages,
+            temperature=0.7,
+            max_tokens=500,
+            stream=True
+        )
+        
+        # Стримим ответ
+        full_response = ""
+        async for line in response.content:
+            line_text = line.decode('utf-8').strip()
+            
+            if line_text.startswith('data: '):
+                data = line_text[6:]
+                if data == '[DONE]':
+                    break
+                
+                try:
+                    chunk = json.loads(data)
+                    if 'choices' in chunk:
+                        delta = chunk['choices'][0].get('delta', {})
+                        if 'content' in delta:
+                            content = delta['content']
+                            full_response += content
+                            yield content
+                except json.JSONDecodeError:
+                    continue
+        
+        # Добавляем ответ AI в историю
+        self.conversation_history.append({
+            "role": "assistant",
+            "content": full_response
+        })
+```
+
+3.4 АНТИЧИТ (LLM)
+-----------------
+
+Создай файл: backend/services/anti_cheat_llm.py
+
+```python
+from typing import Dict
+import json
+from .scibox_client import SciboxClient
+
+class AntiCheatLLM:
+    def __init__(self, client: SciboxClient):
+        self.client = client
+    
+    async def check_code_originality(
+        self,
+        code: str,
+        language: str
+    ) -> Dict:
+        """
+        Проверяет код на плагиат через qwen3-coder-30b
+        
+        Returns:
+            {
+                'similarity_score': 0-100,
+                'is_suspicious': bool,
+                'likely_source': str,
+                'reasoning': str
+            }
+        """
+        
+        system_prompt = """Ты эксперт по анализу кода.
+Определи, был ли этот код скопирован из популярных источников.
+Всегда отвечай в JSON формате."""
+
+        user_prompt = f"""Проанализируй этот {language} код на оригинальность:
+
+```{language}
+{code}
+```
+
+Проверь на совпадения с:
+- LeetCode решениями
+- StackOverflow примерами
+- GitHub репозиториями
+- Учебными материалами
+
+Ответ в JSON:
+{{
+    "similarity_score": 0-100,
+    "is_suspicious": true/false,
+    "likely_source": "leetcode/stackoverflow/github/original",
+    "reasoning": "Подробное объяснение",
+    "confidence": "low/medium/high"
+}}
+
+Оценка:
+- 0-30: оригинальный код
+- 31-70: возможны совпадения
+- 71-100: очень похож на известные решения"""
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+        
+        response = await self.client.chat_completion(
+            model="qwen3-coder-30b-a3b-instruct-fp8",
+            messages=messages,
+            temperature=0.2,  # Очень низкая для детерминированности
+            max_tokens=800
+        )
+        
+        content = response['choices'][0]['message']['content']
+        
+        if '```json' in content:
+            content = content.split('```json')[1].split('```')[0]
+        
+        result = json.loads(content.strip())
+        
+        return result
+```
+
+3.5 EMBEDDING SEARCH
+-------------------
+
+Создай файл: backend/services/embedding_search.py
+
+```python
+from typing import List, Dict
+import numpy as np
+from .scibox_client import SciboxClient
+
+class EmbeddingSearch:
+    def __init__(self, client: SciboxClient):
+        self.client = client
+        self.known_solutions: List[Dict] = []  # База известных решений
+    
+    async def add_known_solution(self, code: str, metadata: Dict):
+        """Добавляет известное решение в базу"""
+        embedding = await self.client.get_embedding(code, model="bge-m3")
+        
+        self.known_solutions.append({
+            'code': code,
+            'embedding': embedding,
+            'metadata': metadata
+        })
+    
+    async def find_similar(self, code: str, threshold: float = 0.95) -> List[Dict]:
+        """
+        Ищет похожие решения через cosine similarity
+        
+        Args:
+            code: код для проверки
+            threshold: порог схожести (0-1)
+        
+        Returns:
+            Список похожих решений с similarity score
+        """
+        # Получаем embedding для проверяемого кода
+        code_embedding = await self.client.get_embedding(code, model="bge-m3")
+        
+        similar = []
+        
+        for solution in self.known_solutions:
+            # Вычисляем cosine similarity
+            similarity = self._cosine_similarity(
+                code_embedding,
+                solution['embedding']
+            )
+            
+            if similarity >= threshold:
+                similar.append({
+                    'code': solution['code'],
+                    'similarity': similarity,
+                    'metadata': solution['metadata']
+                })
+        
+        # Сортируем по убыванию similarity
+        similar.sort(key=lambda x: x['similarity'], reverse=True)
+        
+        return similar
+    
+    @staticmethod
+    def _cosine_similarity(vec1: List[float], vec2: List[float]) -> float:
+        """Вычисляет cosine similarity между двумя векторами"""
+        vec1 = np.array(vec1)
+        vec2 = np.array(vec2)
+        
+        dot_product = np.dot(vec1, vec2)
+        norm_product = np.linalg.norm(vec1) * np.linalg.norm(vec2)
+        
+        if norm_product == 0:
+            return 0.0
+        
+        return float(dot_product / norm_product)
+```
+
+=====================================================
+ШАГ 4: ИНТЕГРАЦИЯ В FASTAPI
+=====================================================
+
+Создай файл: backend/main.py
+
+```python
+from fastapi import FastAPI, HTTPException, WebSocket
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import Optional, Dict
+
+from services.scibox_client import SciboxClient
+from services.task_generator import TaskGenerator
+from services.solution_evaluator import SolutionEvaluator
+from services.ai_dialogue import AIDialogue
+from services.anti_cheat_llm import AntiCheatLLM
+from services.embedding_search import EmbeddingSearch
+
+app = FastAPI(title="VibeCode Jam API")
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Инициализируем Scibox клиент (singleton)
+SCIBOX_API_KEY = "sk-Jw0mXI7PMgeFYVCW8e8PKw"
+scibox_client = SciboxClient(api_key=SCIBOX_API_KEY)
+
+# Инициализируем сервисы
+task_generator = None
+solution_evaluator = None
+ai_dialogue = None
+anti_cheat = None
+embedding_search = None
+
+@app.on_event("startup")
+async def startup():
+    global task_generator, solution_evaluator, ai_dialogue, anti_cheat, embedding_search
+    
+    await scibox_client.__aenter__()
+    
+    task_generator = TaskGenerator(scibox_client)
+    solution_evaluator = SolutionEvaluator(scibox_client)
+    ai_dialogue = AIDialogue(scibox_client)
+    anti_cheat = AntiCheatLLM(scibox_client)
+    embedding_search = EmbeddingSearch(scibox_client)
+
+@app.on_event("shutdown")
+async def shutdown():
+    await scibox_client.__aexit__(None, None, None)
+
+
+# === API ENDPOINTS ===
+
+class StartInterviewRequest(BaseModel):
+    level: str  # junior/middle/senior
+    domain: str  # algorithms/backend/frontend
+
+@app.post("/api/interview/start")
+async def start_interview(request: StartInterviewRequest):
+    """Начинает интервью и генерирует первую задачу"""
+    try:
+        # Генерируем задачу через Scibox
+        task = await task_generator.generate_task(
+            level=request.level,
+            domain=request.domain
+        )
+        
+        # Создаём сессию в БД (не показано)
+        session_id = "uuid-here"
+        
+        return {
+            "session_id": session_id,
+            "task": task,
+            "message": "Interview started successfully"
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class SubmitCodeRequest(BaseModel):
+    session_id: str
+    code: str
+    test_results: Dict
+
+@app.post("/api/code/submit")
+async def submit_code(request: SubmitCodeRequest):
+    """Принимает код и оценивает через Scibox"""
+    try:
+        # Получаем задачу из БД (не показано)
+        task = {"title": "Example", "description": "..."}
+        
+        # Оцениваем решение
+        evaluation = await solution_evaluator.evaluate_solution(
+            task=task,
+            code=request.code,
+            test_results=request.test_results,
+            execution_time_ms=100.0
+        )
+        
+        # Проверяем на плагиат
+        cheat_check = await anti_cheat.check_code_originality(
+            code=request.code,
+            language="python"
+        )
+        
+        # Ищем похожие решения
+        similar = await embedding_search.find_similar(
+            code=request.code,
+            threshold=0.95
+        )
+        
+        return {
+            "evaluation": evaluation,
+            "anti_cheat": cheat_check,
+            "similar_solutions_found": len(similar) > 0
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.websocket("/ws/interview/{session_id}")
+async def websocket_interview(websocket: WebSocket, session_id: str):
+    """WebSocket для диалога с AI интервьюером"""
+    await websocket.accept()
+    
+    try:
+        while True:
+            # Получаем сообщение от кандидата
+            message = await websocket.receive_text()
+            
+            # Получаем контекст из БД
+            context = {"task_title": "Example Task"}
+            
+            # Стримим ответ AI
+            async for chunk in ai_dialogue.send_message(message, context):
+                await websocket.send_text(chunk)
+    
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+    finally:
+        await websocket.close()
+
+
+@app.get("/health")
+async def health():
+    return {"status": "ok", "scibox": "connected"}
+```
+
+=====================================================
+ШАГ 5: ТЕСТИРОВАНИЕ
+=====================================================
+
+Создай файл: test_scibox.py
+
+```python
+import asyncio
+from backend.services.scibox_client import SciboxClient
+from backend.services.task_generator import TaskGenerator
+
+async def test_all():
+    print("=== ТЕСТ ПОДКЛЮЧЕНИЯ К SCIBOX ===\n")
+    
+    async with SciboxClient(api_key="sk-Jw0mXI7PMgeFYVCW8e8PKw") as client:
+        
+        # Тест 1: Простой чат
+        print("1. Тест простого чата...")
+        response = await client.chat_completion(
+            model="qwen3-32b-awq",
+            messages=[{"role": "user", "content": "Скажи 'привет'"}],
+            temperature=0.7,
+            max_tokens=50
+        )
+        print(f"Ответ: {response['choices'][0]['message']['content']}\n")
+        
+        # Тест 2: Генерация задачи
+        print("2. Тест генерации задачи...")
+        task_gen = TaskGenerator(client)
+        task = await task_gen.generate_task(
+            level="junior",
+            domain="algorithms"
+        )
+        print(f"Задача: {task['title']}")
+        print(f"Описание: {task['description'][:100]}...\n")
+        
+        # Тест 3: Embedding
+        print("3. Тест embedding...")
+        embedding = await client.get_embedding("def hello(): return 'world'")
+        print(f"Embedding размер: {len(embedding)}")
+        print(f"Первые 5 значений: {embedding[:5]}\n")
+        
+        print("✅ ВСЕ ТЕСТЫ ПРОШЛИ УСПЕШНО!")
+
+if __name__ == "__main__":
+    asyncio.run(test_all())
+```
+
+Запуск:
+```bash
+python test_scibox.py
+```
+
+=====================================================
+ШАГ 6: КЭШИРОВАНИЕ (ЭКОНОМИЯ RPS)
+=====================================================
+
+Создай файл: backend/services/cache.py
+
+```python
+import redis
+import json
+from typing import Optional, Any
+import hashlib
+
+class RedisCache:
+    def __init__(self, redis_url: str = "redis://localhost:6379"):
+        self.redis = redis.from_url(redis_url)
+    
+    def _make_key(self, prefix: str, data: Any) -> str:
+        """Создаёт уникальный ключ из данных"""
+        data_str = json.dumps(data, sort_keys=True)
+        hash_obj = hashlib.md5(data_str.encode())
+        return f"{prefix}:{hash_obj.hexdigest()}"
+    
+    def get_cached_task(self, level: str, domain: str) -> Optional[Dict]:
+        """Пытается получить закэшированную задачу"""
+        key = self._make_key("task", {"level": level, "domain": domain})
+        cached = self.redis.get(key)
+        
+        if cached:
+            return json.loads(cached)
+        return None
+    
+    def cache_task(self, level: str, domain: str, task: Dict, ttl: int = 86400):
+        """Кэширует задачу на 24 часа"""
+        key = self._make_key("task", {"level": level, "domain": domain})
+        self.redis.setex(key, ttl, json.dumps(task))
+    
+    def get_cached_evaluation(self, code_hash: str) -> Optional[Dict]:
+        """Пытается получить закэшированную оценку"""
+        key = f"eval:{code_hash}"
+        cached = self.redis.get(key)
+        
+        if cached:
+            return json.loads(cached)
+        return None
+    
+    def cache_evaluation(self, code: str, evaluation: Dict, ttl: int = 3600):
+        """Кэширует оценку на 1 час"""
+        code_hash = hashlib.md5(code.encode()).hexdigest()
+        key = f"eval:{code_hash}"
+        self.redis.setex(key, ttl, json.dumps(evaluation))
+```
+
+ИНТЕГРАЦИЯ В СЕРВИСЫ:
+```python
+class TaskGenerator:
+    def __init__(self, client: SciboxClient, cache: RedisCache):
+        self.client = client
+        self.cache = cache
+    
+    async def generate_task(self, level: str, domain: str, ...):
+        # Проверяем кэш
+        cached = self.cache.get_cached_task(level, domain)
+        if cached:
+            print("Используем закэшированную задачу")
+            return cached
+        
+        # Генерируем через Scibox
+        task = await self._generate_via_llm(level, domain)
+        
+        # Кэшируем
+        self.cache.cache_task(level, domain, task)
+        
+        return task
+```
+
+=====================================================
+ЧЕКЛИСТ ГОТОВНОСТИ
+=====================================================
+
+□ Создан SciboxClient с rate limiting
+□ Создан TaskGenerator для генерации задач
+□ Создан SolutionEvaluator для оценки кода
+□ Создан AIDialogue для streaming диалога
+□ Создан AntiCheatLLM для проверки плагиата
+□ Создан EmbeddingSearch для поиска похожих решений
+□ Интегрировано в FastAPI с endpoints
+□ Добавлен WebSocket для real-time чата
+□ Настроено кэширование через Redis
+□ Протестировано подключение к Scibox
+□ Все 3 модели (qwen3-32b, qwen3-coder, bge-m3) работают
+
+=====================================================
+ВАЖНЫЕ ЗАМЕЧАНИЯ
+=====================================================
+
+1. BASE_URL: Уточни точный URL API Scibox в документации
+   Может быть: https://api.scibox.tech/v1 или другой
+
+2. ФОРМАТ ОТВЕТОВ: Проверь точный формат ответов Scibox
+   Возможно отличается от OpenAI формата
+
+3. STREAMING: Уточни как именно работает streaming в Scibox
+   Формат SSE может отличаться
+
+4. EMBEDDINGS: Проверь endpoint и формат для bge-m3
+
+5. ERROR HANDLING: Добавь обработку специфичных ошибок Scibox
+
+6. RETRY LOGIC: Добавь повторные попытки при сбоях
+
+7. МОНИТОРИНГ: Логируй все запросы к Scibox для отладки
+
+=====================================================
+
+ГОТОВО! Теперь у тебя есть полная интеграция Scibox LLM.
+Начни с тестирования базового подключения, затем добавляй
+остальные компоненты по мере необходимости.
+
+Удачи! 🚀
