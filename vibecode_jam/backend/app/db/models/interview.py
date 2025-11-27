@@ -14,7 +14,7 @@ class Interview(Base):
     final_score = Column(Integer, nullable=True)
     started_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
-    metadata = Column(JSON, default={})
+    meta_data = Column(JSON, default={})
 
     tasks = relationship("Task", back_populates="interview", cascade="all, delete-orphan")
     solutions = relationship("Solution", back_populates="interview", cascade="all, delete-orphan")
