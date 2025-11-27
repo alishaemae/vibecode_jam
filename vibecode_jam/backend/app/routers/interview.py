@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import uuid4
 from app.db import get_db
 from app.schemas.interview import InterviewStartRequest, InterviewResponse, AdaptTaskResponse
-from app.models import Interview, Task
+from app.db.models import Interview, Task
 from vibecode_jam.backend.app.redis.redis_client import get_redis
 
 router = APIRouter()

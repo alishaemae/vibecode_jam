@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .base import Base
@@ -10,8 +10,10 @@ class Task(Base):
     interview_id = Column(Integer, ForeignKey("interviews.id", ondelete="CASCADE"), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    examples = Column(Text, nullable=True)
-    difficulty = Column(String(50), nullable=True)
+    level = Column(String(50), nullable=True)
+    domain = Column(String(100), nullable=True)
+    task_data = Column(JSON, default={})
+    times_used = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useInterviewStore } from '../store/interviewStore';
+import { config, getWebSocketUrl } from '../config/api';
 
 interface Message {
   id: string;
@@ -18,12 +19,9 @@ export function useWebSocket(sessionId: string | null) {
   useEffect(() => {
     if (!sessionId) return;
 
-    const newSocket = io('http://localhost:8000', {
-      query: { session_id: sessionId },
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      reconnectionAttempts: 5,
+    const wsUrl = getWebSocketUrl(sessionId);
+    const newSocket = io(wsUrl, {
+      ...config.socketOptions,
     });
 
     newSocket.on('connect', () => {

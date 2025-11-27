@@ -1,13 +1,14 @@
 from pydantic import BaseModel
-from uuid import UUID
+from typing import Optional
 
 class RunCodeRequest(BaseModel):
-    session_id: UUID
+    session_id: int
     code: str
     language: str
 
 class SubmitCodeRequest(BaseModel):
-    session_id: UUID
+    session_id: int
+    task_id: int
     code: str
     language: str
 

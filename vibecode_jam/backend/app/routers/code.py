@@ -2,8 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.code import SubmitCodeRequest, CodeSubmitResponse
 from app.db import get_db
-from app.models import Submission
-from uuid import uuid4
+from app.db.models import Solution
 from datetime import datetime
 from worker.tasks import enqueue_submission
 
@@ -11,20 +10,20 @@ router = APIRouter()
 
 @router.post("/submit", response_model=CodeSubmitResponse)
 async def submit_code_endpoint(request: SubmitCodeRequest, db: AsyncSession = Depends(get_db)):
-    # Сохраняем новый submission
-    submission = Submission(
-        interview_id=uuid4(),
-        task_id=uuid4(),
+    # Сохраняем новое решение
+    solution = Solution(
+        interview_id=request.session_id,
+        task_id=request.task_id,
         code=request.code,
         language=request.language,
         submitted_at=datetime.utcnow()
     )
-    db.add(submission)
+    db.add(solution)
     await db.commit()
-    await db.refresh(submission)
+    await db.refresh(solution)
 
     # Поставим в очередь на асинхронную обработку
-    await enqueue_submission(submission.id, request.code, request.language, db)
+    await enqueue_submission(solution.id, request.code, request.language, db)
 
     return CodeSubmitResponse(
         tests_passed="Pending...",
