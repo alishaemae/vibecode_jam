@@ -9,48 +9,60 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Get database URL from environment
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql+asyncpg://postgres:password@localhost:5432/vibecode_db"
-)
+# Try to use real database, fall back to mock if unavailable
+USE_MOCK_DB = os.getenv("USE_MOCK_DB", "false").lower() == "true"
 
-# Create async engine
-engine = create_async_engine(
-    DATABASE_URL,
-    echo=False,
-    poolclass=NullPool,  # Use NullPool for development to avoid connection issues
-    future=True
-)
+if not USE_MOCK_DB:
+    try:
+        # Get database URL from environment
+        DATABASE_URL = os.getenv(
+            "DATABASE_URL",
+            "postgresql+asyncpg://postgres:password@localhost:5432/vibecode_db"
+        )
 
-# Create session factory
-AsyncSessionLocal = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-    autoflush=False
-)
+        # Create async engine
+        engine = create_async_engine(
+            DATABASE_URL,
+            echo=False,
+            poolclass=NullPool,
+            future=True,
+            connect_args={"timeout": 5}
+        )
 
+        # Create session factory
+        AsyncSessionLocal = async_sessionmaker(
+            engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autoflush=False
+        )
 
-async def get_db() -> AsyncSession:
-    """
-    Dependency for getting database session in FastAPI routes
+        async def get_db() -> AsyncSession:
+            """
+            Dependency for getting database session in FastAPI routes
+            """
+            async with AsyncSessionLocal() as session:
+                try:
+                    yield session
+                except Exception as e:
+                    await session.rollback()
+                    logger.error(f"Database session error: {e}")
+                    raise
+                finally:
+                    await session.close()
 
-    Usage in routes:
-        @app.get("/items")
-        async def get_items(db: AsyncSession = Depends(get_db)):
-            # Use db session
-            pass
-    """
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        except Exception as e:
-            await session.rollback()
-            logger.error(f"Database session error: {e}")
-            raise
-        finally:
-            await session.close()
+        logger.info("Using real PostgreSQL database")
+
+    except Exception as e:
+        logger.warning(f"Could not initialize real database: {e}. Using mock database.")
+        USE_MOCK_DB = True
+
+# If real database is not available, use mock
+if USE_MOCK_DB:
+    from app.db.mock import get_mock_db as get_db
+    engine = None
+    AsyncSessionLocal = None
+    logger.info("Using mock in-memory database")
 
 
 async def init_db():

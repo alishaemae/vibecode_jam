@@ -65,16 +65,31 @@ async def lifespan(app: FastAPI):
         logger.info("Mock services initialized")
 
     # Initialize cache
-    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
-    cache = RedisCache(redis_url)
-    await cache.connect()
+    try:
+        redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+        cache = RedisCache(redis_url)
+        await cache.connect()
+        logger.info("Redis cache connected")
+    except Exception as e:
+        logger.warning(f"Redis cache initialization failed: {e}. Caching disabled.")
+        cache = None
 
     yield
 
     # Shutdown
     logger.info("Shutting down VibeCode Jam Backend...")
-    await scibox_client.__aexit__(None, None, None)
-    await cache.disconnect()
+    try:
+        if scibox_client:
+            await scibox_client.__aexit__(None, None, None)
+    except Exception as e:
+        logger.warning(f"Error shutting down Scibox client: {e}")
+
+    try:
+        if cache:
+            await cache.disconnect()
+    except Exception as e:
+        logger.warning(f"Error shutting down cache: {e}")
+
     logger.info("Shutdown complete")
 
 
