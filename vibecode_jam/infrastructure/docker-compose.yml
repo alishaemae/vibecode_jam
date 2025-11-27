@@ -40,6 +40,8 @@ services:
     env_file:
       - .env
     environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/vibecode
+      - REDIS_URL=redis://redis:6379/0
       - DOCKER_HOST=unix:///var/run/docker.sock
     depends_on:
       postgres:
